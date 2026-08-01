@@ -9,5 +9,10 @@ A Python-based wireless telemetry system for collecting vehicle data from the CA
 - 🔧 **Modular Design** – Easily extend support for additional CAN messages, sensors, and dashboard features.
 - 📈 **Historical Data Visualization** – Review logged telemetry through charts and graphs on the website.
 
+## Hardware
+- Python Server
+- Raspberry Pi
+- RS485 CAN HAT with MCP2515 onboard controller
+
 ## Status
 > 🚧 **Project Status:** This project is currently in active development.
