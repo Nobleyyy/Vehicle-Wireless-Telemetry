@@ -8,3 +8,6 @@ A Python-based wireless telemetry system for collecting vehicle data from the CA
 - 🌐 **Web-Based Dashboard** – Monitor live vehicle telemetry through the web interface.
 - 🔧 **Modular Design** – Easily extend support for additional CAN messages, sensors, and dashboard features.
 - 📈 **Historical Data Visualization** – Review logged telemetry through charts and graphs on the website.
+
+## Status
+> 🚧 **Project Status:** This project is currently in active development. Core CAN bus communication, wireless telemetry, and the web-based monitoring platform are being implemented.
