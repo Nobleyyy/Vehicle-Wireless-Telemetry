@@ -1,0 +1,16 @@
+VERSION "1.0"
+
+BS_:
+
+BU_: ECU
+
+BA_DEF_ "BusType" STRING;
+BA_DEF_DEF_ "BusType" "CAN";
+BA_ "BusType" "CAN";
+
+BO_ 256 VehicleData: 8 ECU
+ SG_ EngineRPM    : 0|16@1+ (0.25,0) [0|16383.75] "rpm" ECU
+ SG_ VehicleSpeed : 16|16@1+ (0.01,0) [0|250] "mph" ECU
+ SG_ ThrottlePos  : 32|8@1+ (0.4,0) [0|100] "%" ECU
+ SG_ BrakePos     : 40|8@1+ (0.4,0) [0|100] "%" ECU
+ SG_ EngineTemp   : 48|8@1+ (1,-40) [-40|215] "degC" ECU
