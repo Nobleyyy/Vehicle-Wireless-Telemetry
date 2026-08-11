@@ -6,7 +6,9 @@ from vehicle_constants import *
 # Package Imports
 import can
 import cantools
+import json
 import socket
+import struct
 import time
 
 ## Classes ##
@@ -77,10 +79,41 @@ class Car():
         for signal_name, value in signals.items():
             print(f"{signal_name}: {value}")
 
+class Data_Client():
+    def __init__(self) -> None:
+        self.connection = socket.socket()
+        self.connection.connect((SERVER_IP, SERVER_PORT))
+
+        self.package_id = 0
+
+    def send_data(self, data):
+        # Send data off
+        self.connection.sendall(self.array_to_json(data))
+
+
+    def array_to_json(self, data_to_encode: dict|str) -> bytes:
+        # array of [data, timestamp, id]
+        self.package_id += 1
+        package = [data_to_encode, time.time(), self.package_id]
+
+        return json.dumps(package).encode()
+
 
 ## Main Program ##
 
-fs_car = Car()
+#fs_car = Car()
 
-while True:
-    pass
+comms = Data_Client()
+
+while BROADCAST_DATA:
+    # Input data
+    data = input("Send: ")
+
+    # Exit
+    if data == "quit":
+        break
+
+    # Send data off
+    comms.send_data(data)
+
+comms.connection.close()
