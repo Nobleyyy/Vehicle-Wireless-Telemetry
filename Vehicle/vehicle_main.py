@@ -103,6 +103,14 @@ class Data_Client():
 
 #fs_car = Car()
 
+
+
+
+
+
+
+
+
 comms = Data_Client()
 
 while BROADCAST_DATA:
