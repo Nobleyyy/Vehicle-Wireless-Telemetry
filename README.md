@@ -10,9 +10,13 @@ A Python-based wireless telemetry system for collecting vehicle data from the CA
 - 📈 **Historical Data Visualization** – Review logged telemetry through charts and graphs on the website.
 
 ## Hardware
-- Python Server
+- Server
 - Raspberry Pi
 - RS485 CAN HAT with MCP2515 onboard controller
+
+## Software
+- Python Server
+- HTML Website Server
 
 ## Status
 > 🚧 **Project Status:** This project is currently in active development.
