@@ -104,21 +104,35 @@ class Data_Client():
 #fs_car = Car()
 
 
+#############################
+# Simulated data
+import csv
 
+def read_csv(filename="Vehicle/ecu_signals.csv"):
+    if not hasattr(read_csv, "reader"):
+        read_csv.file = open(filename, "r", newline="")
+        read_csv.reader = csv.DictReader(read_csv.file)
 
+    try:
+        return next(read_csv.reader)
+    except StopIteration:
+        read_csv.file.close()
+        del read_csv.reader
+        del read_csv.file
+        return None
 
-
-
+#############################
 
 
 comms = Data_Client()
 
 while BROADCAST_DATA:
     # Input data
-    data = input("Send: ")
+    data = read_csv()
+    time.sleep(0.2)
 
     # Exit
-    if data == "quit":
+    if data == None:
         break
 
     # Send data off

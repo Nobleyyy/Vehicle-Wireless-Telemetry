@@ -1,4 +1,4 @@
-### Server Constants ###
+### Vehicle Server Constants ###
 
 # Server Info
 SERVER_IP = "localhost"
