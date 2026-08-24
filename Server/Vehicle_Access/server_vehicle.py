@@ -2,16 +2,15 @@
 
 # File Imports
 from vehicle_server_constants import *
-import Web_Access.server_web as web
+import store_data as db
 
 # Package Imports
 import json
 import socket
-import struct
 import time
 
 ## Classes ##
-class Data_Server:
+class Vehicle_Server:
     def __init__(self) -> None:
         self.connection = socket.socket()
         self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -20,6 +19,7 @@ class Data_Server:
         self.connection.listen(1)
 
         self.msg_id = 0
+        self.buffer = b""
 
     def connect(self):
         print(f"Waiting for connection on {SERVER_IP}:{SERVER_PORT}...")
@@ -33,16 +33,17 @@ class Data_Server:
         print("Client disconnected")
         self.msg_id = 0
 
-    def receive(self) -> tuple[dict|str, float, int]:
-        # array of [data, timestamp, id]
-        data = self.conn.recv(1024)
+    def receive(self) -> tuple[dict | str, float, int]:
+        while b"\n" not in self.buffer:
+            data = self.conn.recv(1024)
+            if not data:
+                return None
+            self.buffer += data
 
-        if not data:
-            return None
-
+        message, self.buffer = self.buffer.split(b"\n", 1)
         self.msg_id += 1
+        return json.loads(message.decode())
 
-        return json.loads(data.decode())
 
     def date_to_string(self, timestamp_to_convert:float ) -> list:
         dt = time.localtime(timestamp_to_convert)
@@ -50,7 +51,9 @@ class Data_Server:
 
 
 ## Main Program ##
-comms = Data_Server()
+comms = Vehicle_Server()
+
+table_created = False
 
 while True:
     comms.connect()
@@ -62,16 +65,33 @@ while True:
             break
 
         package = {
-            "ID": msg[2],
+            "id": msg[2],
             "timestamp": msg[1],
             "msg": msg[0]
         }
 
-        print("Received   ID: ", package["ID"],
+        print("Received   ID: ", package["id"],
             "\nTime: ", comms.date_to_string(package["timestamp"])[0],
             "\nMsg: ", package["msg"])
 
         if package["msg"] == "quit":
             break
+
+        database_package = {
+            "id": package["id"],
+            "timestamp": package["timestamp"],
+            **package["msg"]
+        }
+
+
+        # Create the table from the first package
+        if not table_created:
+
+            db.create_table(database_package)
+
+            table_created = True
+
+        # Insert the package
+        db.insert_record(database_package)
 
     comms.disconnect()

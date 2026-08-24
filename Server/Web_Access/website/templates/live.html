@@ -1,5 +1,57 @@
-{% extends "base.html" %}{% block title %}Live{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Live{% endblock %}
 
 {% block content %}
+
 <h1>This is the live page</h1>
+
+<div id="vehicle-data">
+    Waiting for data...
+</div>
+
+
+<script>
+
+const events = new EventSource(
+    "/live?stream=1"
+);
+
+
+events.onmessage = function(event) {
+
+    const data = JSON.parse(event.data);
+
+    const container = document.getElementById(
+        "vehicle-data"
+    );
+
+    // Clear previous record
+    container.innerHTML = "";
+
+
+    // Display every dictionary item
+    for (const [key, value] of Object.entries(data)) {
+
+        const row = document.createElement("p");
+
+        row.textContent =
+            key + ": " + value;
+
+        container.appendChild(row);
+    }
+};
+
+
+events.onerror = function() {
+
+    console.log(
+        "Live connection closed."
+    );
+
+    events.close();
+};
+
+</script>
+
 {% endblock %}

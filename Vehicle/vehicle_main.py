@@ -4,13 +4,13 @@
 from vehicle_constants import *
 
 # Package Imports
-import can
-import cantools
+#import can
+#import cantools
 import json
 import socket
 import struct
 import time
-
+'''
 ## Classes ##
 class Car():
     def __init__(self) -> None:
@@ -78,7 +78,7 @@ class Car():
 
         for signal_name, value in signals.items():
             print(f"{signal_name}: {value}")
-
+'''
 class Data_Client():
     def __init__(self) -> None:
         self.connection = socket.socket()
@@ -90,13 +90,12 @@ class Data_Client():
         # Send data off
         self.connection.sendall(self.array_to_json(data))
 
-
     def array_to_json(self, data_to_encode: dict|str) -> bytes:
         # array of [data, timestamp, id]
         self.package_id += 1
         package = [data_to_encode, time.time(), self.package_id]
 
-        return json.dumps(package).encode()
+        return (json.dumps(package) + "\n").encode()
 
 
 ## Main Program ##
@@ -108,7 +107,7 @@ class Data_Client():
 # Simulated data
 import csv
 
-def read_csv(filename="Vehicle/ecu_signals.csv"):
+def read_csv(filename="ecu_signals.csv"):
     if not hasattr(read_csv, "reader"):
         read_csv.file = open(filename, "r", newline="")
         read_csv.reader = csv.DictReader(read_csv.file)

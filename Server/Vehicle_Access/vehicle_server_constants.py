@@ -2,4 +2,4 @@
 
 # Server Info
 SERVER_IP = "localhost"
-SERVER_PORT = 5000
+SERVER_PORT = 5001
