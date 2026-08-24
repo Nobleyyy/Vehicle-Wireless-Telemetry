@@ -30,20 +30,27 @@ class Vehicle_Server:
 
     def disconnect(self):
         self.conn.close()
+        self.buffer = b""
         print("Client disconnected")
         self.msg_id = 0
 
-    def receive(self) -> tuple[dict | str, float, int]:
+    def receive(self) -> tuple[dict | str, float, int] | None:
         while b"\n" not in self.buffer:
-            data = self.conn.recv(1024)
+            try:
+                data = self.conn.recv(1024)
+
+            except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
+                return None
+
             if not data:
                 return None
+
             self.buffer += data
 
         message, self.buffer = self.buffer.split(b"\n", 1)
         self.msg_id += 1
-        return json.loads(message.decode())
 
+        return json.loads(message.decode())
 
     def date_to_string(self, timestamp_to_convert:float ) -> list:
         dt = time.localtime(timestamp_to_convert)
@@ -53,7 +60,7 @@ class Vehicle_Server:
 ## Main Program ##
 comms = Vehicle_Server()
 
-table_created = False
+current_table = None
 
 while True:
     comms.connect()
@@ -70,12 +77,11 @@ while True:
             "msg": msg[0]
         }
 
+        """
         print("Received   ID: ", package["id"],
             "\nTime: ", comms.date_to_string(package["timestamp"])[0],
             "\nMsg: ", package["msg"])
-
-        if package["msg"] == "quit":
-            break
+        """
 
         database_package = {
             "id": package["id"],
@@ -83,15 +89,18 @@ while True:
             **package["msg"]
         }
 
+        # ID 1 means a new session has started
+        if package["id"] == 1:
 
-        # Create the table from the first package
-        if not table_created:
+            current_table = db.create_session_table(
+                database_package
+            )
 
-            db.create_table(database_package)
+        # Insert the package into the current session
+        db.insert_record(
+            database_package,
+            current_table
+        )
 
-            table_created = True
-
-        # Insert the package
-        db.insert_record(database_package)
 
     comms.disconnect()

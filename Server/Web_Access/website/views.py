@@ -6,12 +6,11 @@ import sqlite3
 import threading
 import queue
 import json
+import time
 import win32event
 import win32api
 
-
 views = Blueprint("views", __name__)
-
 
 EVENT_NAME = r"Global\VehicleAccessNewRecord"
 
@@ -45,7 +44,6 @@ def live():
 
     return live_stream()
 
-
 def get_latest_entry():
 
     with sqlite3.connect(
@@ -53,12 +51,34 @@ def get_latest_entry():
         timeout=30
     ) as connection:
 
+        # Find the latest session table
         cursor = connection.execute("""
-            SELECT *
-            FROM vehicle
-            ORDER BY ID DESC
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table'
+              AND name GLOB 'session_[0-9]*'
+            ORDER BY CAST(
+                SUBSTR(name, 9) AS INTEGER
+            ) DESC
             LIMIT 1
         """)
+
+        result = cursor.fetchone()
+
+        if result is None:
+            return None
+
+        table_name = result[0]
+
+        # Read the latest record from the latest session table
+        cursor = connection.execute(
+            f"""
+                SELECT *
+                FROM "{table_name}"
+                ORDER BY id DESC
+                LIMIT 1
+            """
+        )
 
         row = cursor.fetchone()
 
@@ -70,9 +90,18 @@ def get_latest_entry():
             for description in cursor.description
         ]
 
-        return dict(
-            zip(columns, row)
-        )
+        record = dict(zip(columns, row))
+
+        if record.get("timestamp"):
+            try:
+                record["timestamp"] = time.strftime(
+                    "%d/%m/%y %H:%M:%S",
+                    time.localtime(float(record["timestamp"]))
+                )
+            except (ValueError, TypeError, OverflowError):
+                pass
+
+        return record
 
 def live_stream():
     messages = queue.Queue()
@@ -86,17 +115,40 @@ def live_stream():
             EVENT_NAME
         )
 
+        last_data_time = time.time()
+        waiting_sent = False
+
         try:
             while not stop_event.is_set():
+
                 result = win32event.WaitForSingleObject(
                     event,
                     1000
                 )
+
                 if result == win32event.WAIT_OBJECT_0:
+
                     record = get_latest_entry()
+
                     if record is not None:
                         messages.put(record)
+
+                        # Reset the 60-second timer
+                        last_data_time = time.time()
+                        waiting_sent = False
+
                     win32event.ResetEvent(event)
+
+                # No new event/data for 60 seconds
+                if (
+                    not waiting_sent
+                    and time.time() - last_data_time >= 60
+                ):
+                    messages.put({
+                        "status": "Waiting for data to recommence..."
+                    })
+
+                    waiting_sent = True
 
         finally:
             win32api.CloseHandle(event)

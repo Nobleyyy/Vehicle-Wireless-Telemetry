@@ -28,34 +28,68 @@ def connect():
     )
 
 
-def create_table(data):
-
-    columns = []
-
-    for key in data:
-
-        if key == "id":
-            columns.append(
-                '"id" INTEGER PRIMARY KEY'
-            )
-        else:
-            columns.append(
-                f'"{key}" TEXT'
-            )
-
-    sql = f"""
-        CREATE TABLE IF NOT EXISTS vehicle (
-            {", ".join(columns)}
-        )
-    """
+def create_session_table(data):
 
     with connect() as connection:
 
+        cursor = connection.execute("""
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table'
+              AND name LIKE 'session_%'
+        """)
+
+        tables = [
+            row[0]
+            for row in cursor.fetchall()
+        ]
+
+        numbers = []
+
+        for table in tables:
+
+            try:
+                number = int(table.removeprefix("session_"))
+                numbers.append(number)
+
+            except ValueError:
+                pass
+
+        next_number = max(numbers, default=0) + 1
+
+        table_name = f"session_{next_number}"
+
+        columns = []
+
+        for key in data:
+
+            if key == "id":
+                columns.append(
+                    '"id" INTEGER PRIMARY KEY'
+                )
+            else:
+                columns.append(
+                    f'"{key}" TEXT'
+                )
+
+        sql = f"""
+            CREATE TABLE "{table_name}" (
+                {", ".join(columns)}
+            )
+        """
+
         connection.execute(sql)
 
+        return table_name
 
 
-def insert_record(data:dict, event_msg:bool = True):
+
+
+def insert_record(
+    data: dict,
+    table_name: str,
+    event_msg: bool = True
+):
 
     columns = ", ".join(
         f'"{key}"'
@@ -68,20 +102,25 @@ def insert_record(data:dict, event_msg:bool = True):
     )
 
     sql = f"""
-        INSERT INTO vehicle
+        INSERT INTO "{table_name}"
         ({columns})
         VALUES ({placeholders})
     """
 
     with connect() as connection:
 
-        cursor = connection.execute(sql,tuple(data.values()))
+        cursor = connection.execute(
+            sql,
+            tuple(data.values())
+        )
+
         record_id = cursor.lastrowid
 
     if event_msg:
         send_event()
 
     return record_id
+
 
 def send_event():
 
