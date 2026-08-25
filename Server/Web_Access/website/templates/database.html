@@ -27,7 +27,7 @@
         padding: 2px 8px;
         height: 25px;
         cursor: pointer;
-        background: #f0f0f0;
+        background: #ffffff;
         color: #000;
         border: 1px solid #767676;
         border-radius: 2px;
@@ -70,6 +70,53 @@
     #dataTable tr:nth-child(even) {
         background-color: #f5f5f5;
     }
+
+
+    /* ========================================
+       DARK MODE
+       ======================================== */
+
+    html[data-theme="dark"] #dataTable {
+        color: #e0e0e0;
+    }
+
+    html[data-theme="dark"] #dataTable th,
+    html[data-theme="dark"] #dataTable td {
+        border-color: #555;
+    }
+
+    html[data-theme="dark"] #dataTable th {
+        background-color: #333;
+        color: #fff;
+    }
+
+    html[data-theme="dark"] #dataTable td {
+        background-color: #555;
+        color: #e0e0e0;
+    }
+
+    html[data-theme="dark"] #dataTable tr:nth-child(even) td {
+        background-color: #606060;
+    }
+
+    /* Dark mode controls */
+    html[data-theme="dark"] #tableSelect {
+        background-color: #d3d3d3;
+        color: #000;
+        border: 1px solid #888;
+    }
+
+    html[data-theme="dark"] #downloadButton {
+        background-color: #d3d3d3;
+        color: #000;
+        border: 1px solid #888;
+    }
+
+    html[data-theme="dark"] #tableSelect option {
+        background-color: #d3d3d3;
+        color: #000;
+    }
+
 </style>
 
 
@@ -90,7 +137,6 @@
         <button id="downloadButton" type="button">
             Download CSV
         </button>
-
 
         <span id="loading">Loading...</span>
 
@@ -124,6 +170,7 @@ const tableBody = document.getElementById("tableBody");
 const loading = document.getElementById("loading");
 const downloadButton = document.getElementById("downloadButton");
 
+
 async function loadTable(tableName) {
 
     loading.style.display = "inline";
@@ -148,6 +195,8 @@ async function loadTable(tableName) {
         tableHead.innerHTML = "";
         tableBody.innerHTML = "";
 
+
+        // Create table header
         const headerRow = document.createElement("tr");
 
         data.columns.forEach(column => {
@@ -163,6 +212,7 @@ async function loadTable(tableName) {
         tableHead.appendChild(headerRow);
 
 
+        // Create table rows
         data.rows.forEach(row => {
 
             const tr = document.createElement("tr");
@@ -211,15 +261,18 @@ downloadButton.addEventListener("click", function () {
 
 // Switch table without reloading the page
 tableSelect.addEventListener("change", function () {
+
     loadTable(this.value);
+
 });
 
 
 // Load the first table
 if (tableSelect.value) {
-    loadTable(tableSelect.value);
-}
 
+    loadTable(tableSelect.value);
+
+}
 
 </script>
 

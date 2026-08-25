@@ -14,29 +14,146 @@
         href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
         crossorigin="anonymous"
         />
+        <style>
+            body {
+                background-color: #fff;
+                color: #212529;
+                transition: background-color 0.2s, color 0.2s;
+            }
+
+            /* Dark theme */
+            html[data-theme="dark"] body {
+                background-color: #212529;
+                color: #fff;
+            }
+
+            /* Dark theme navbar */
+            html[data-theme="dark"] .navbar {
+                background-color: #343a40 !important;
+            }
+
+            /* Light theme navbar */
+            html[data-theme="light"] .navbar {
+                background-color: #5a6268 !important;
+            }
+
+            html[data-theme="light"] .navbar .nav-link {
+                color: rgba(255, 255, 255, 0.85);
+            }
+
+            html[data-theme="light"] .navbar .nav-link:hover {
+                color: #fff;
+            }
+
+            /* System dark mode */
+            @media (prefers-color-scheme: dark) {
+                html:not([data-theme="light"]) body {
+                    background-color: #212529;
+                    color: #fff;
+                }
+
+                html:not([data-theme="light"]) .navbar {
+                    background-color: #343a40 !important;
+                }
+            }
+
+            /* System light mode */
+            @media (prefers-color-scheme: light) {
+                html:not([data-theme="dark"]) body {
+                    background-color: #fff;
+                    color: #212529;
+                }
+
+                html:not([data-theme="dark"]) .navbar {
+                    background-color: #5a6268 !important;
+                }
+
+                html:not([data-theme="dark"]) .navbar .nav-link {
+                    color: rgba(255, 255, 255, 0.85);
+                }
+
+                html:not([data-theme="dark"]) .navbar .nav-link:hover {
+                    color: #fff;
+                }
+            }
+            #themeToggle {
+                margin-left: 10px;
+            }
+
+            /* Keep theme button on the same line as hamburger on mobile */
+            @media (max-width: 991.98px) {
+                #themeToggle {
+                    position: absolute;
+                    right: 15px;
+                    top: 10px;
+                    margin-left: 0;
+                }
+            }
+        </style>
 
         <title>{% block title %}Home{% endblock %}</title>
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+
+            <!-- Hamburger -->
+            <button class="navbar-toggler" type="button"
+                    data-toggle="collapse"
+                    data-target="#navbar"
+                    aria-controls="navbar"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
+
+            <!-- Collapsible navigation links -->
             <div class="collapse navbar-collapse" id="navbar">
+
                 <div class="navbar-nav">
+
                     {% if user.is_authenticated %}
-                    <a class="nav-item nav-link" id="home" href="/">Home</a>
-                    <a class="nav-item nav-link" id="live" href="/live">Live</a>
-                    <a class="nav-item nav-link" id="database" href="/database">Database</a>
-                    <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+
+                        <a class="nav-item nav-link" id="home" href="/">
+                            Home
+                        </a>
+
+                        <a class="nav-item nav-link" id="live" href="/live">
+                            Live
+                        </a>
+
+                        <a class="nav-item nav-link" id="database" href="/database">
+                            Database
+                        </a>
+
+                        <a class="nav-item nav-link" id="logout" href="/logout">
+                            Logout
+                        </a>
+
                     {% else %}
-                    <a class="nav-item nav-link" id="login" href="/login">Login</a>
-                    <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
+
+                        <a class="nav-item nav-link" id="login" href="/login">
+                            Login
+                        </a>
+
+                        <a class="nav-item nav-link" id="signUp" href="/sign-up">
+                            Sign Up
+                        </a>
+
                     {% endif %}
-                    
+
                 </div>
+
             </div>
+
+
+            <!-- Theme button - ALWAYS visible -->
+            <button id="themeToggle"
+                    class="btn btn-outline-light btn-sm ml-auto">
+                System
+            </button>
         </nav>
+
         
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -83,7 +200,36 @@
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"
         ></script>
+        <script>
+            const themeToggle = document.getElementById("themeToggle");
 
+            const themes = ["system", "light", "dark"];
+
+            let currentTheme = localStorage.getItem("theme") || "system";
+
+            function applyTheme(theme) {
+                if (theme === "system") {
+                    document.documentElement.removeAttribute("data-theme");
+                } else {
+                    document.documentElement.setAttribute("data-theme", theme);
+                }
+
+                themeToggle.textContent =
+                    theme.charAt(0).toUpperCase() + theme.slice(1);
+            }
+
+            themeToggle.addEventListener("click", function () {
+                let currentIndex = themes.indexOf(currentTheme);
+
+                currentTheme = themes[(currentIndex + 1) % themes.length];
+
+                localStorage.setItem("theme", currentTheme);
+
+                applyTheme(currentTheme);
+            });
+
+            applyTheme(currentTheme);
+        </script>
 
     </body>
 </html>
