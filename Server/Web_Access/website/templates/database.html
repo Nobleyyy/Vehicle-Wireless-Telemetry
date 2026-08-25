@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Database{% endblock %}
+
+{% block content %}
+
+<style>
+    .database-container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .table-selector {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .table-selector label {
+        font-size: 20px;
+        transform: translateY(3px);
+    }
+
+    #downloadButton {
+        font-size: 15px;
+        padding: 2px 8px;
+        height: 25px;
+        cursor: pointer;
+        background: #f0f0f0;
+        color: #000;
+        border: 1px solid #767676;
+        border-radius: 2px;
+    }
+
+    #loading {
+        display: none;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        padding-bottom: 30px;
+    }
+
+    #dataTable {
+        width: 100%;
+        max-width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    #dataTable th,
+    #dataTable td {
+        padding: 6px 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        white-space: normal;
+    }
+
+    #dataTable th {
+        background-color: #333;
+        color: white;
+    }
+
+    #dataTable tr:nth-child(even) {
+        background-color: #f5f5f5;
+    }
+</style>
+
+
+<div class="database-container">
+
+    <div class="table-selector">
+
+        <label for="tableSelect">Table:</label>
+
+        <select id="tableSelect">
+            {% for table in tables %}
+                <option value="{{ table }}">
+                    {{ table.replace("session_", "Session ") }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button id="downloadButton" type="button">
+            Download CSV
+        </button>
+
+
+        <span id="loading">Loading...</span>
+
+    </div>
+
+
+    <h2 id="tableTitle"></h2>
+
+
+    <div class="table-wrapper">
+
+        <table id="dataTable">
+
+            <thead id="tableHead"></thead>
+
+            <tbody id="tableBody"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const tableSelect = document.getElementById("tableSelect");
+const tableTitle = document.getElementById("tableTitle");
+const tableHead = document.getElementById("tableHead");
+const tableBody = document.getElementById("tableBody");
+const loading = document.getElementById("loading");
+const downloadButton = document.getElementById("downloadButton");
+
+async function loadTable(tableName) {
+
+    loading.style.display = "inline";
+
+    try {
+
+        const response = await fetch(
+            `/api/table?name=${encodeURIComponent(tableName)}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to load table");
+        }
+
+        const data = await response.json();
+
+        tableTitle.textContent = data.table.replace(
+            "session_",
+            "Session "
+        );
+
+        tableHead.innerHTML = "";
+        tableBody.innerHTML = "";
+
+        const headerRow = document.createElement("tr");
+
+        data.columns.forEach(column => {
+
+            const th = document.createElement("th");
+
+            th.textContent = column;
+
+            headerRow.appendChild(th);
+
+        });
+
+        tableHead.appendChild(headerRow);
+
+
+        data.rows.forEach(row => {
+
+            const tr = document.createElement("tr");
+
+            row.forEach(value => {
+
+                const td = document.createElement("td");
+
+                td.textContent = value ?? "";
+
+                tr.appendChild(td);
+
+            });
+
+            tableBody.appendChild(tr);
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        tableTitle.textContent = "Error loading table";
+
+    } finally {
+
+        loading.style.display = "none";
+    }
+}
+
+
+// Download currently selected table as CSV
+downloadButton.addEventListener("click", function () {
+
+    const tableName = tableSelect.value;
+
+    if (!tableName) {
+        return;
+    }
+
+    window.location.href =
+        `/api/table/csv?name=${encodeURIComponent(tableName)}`;
+
+});
+
+
+// Switch table without reloading the page
+tableSelect.addEventListener("change", function () {
+    loadTable(this.value);
+});
+
+
+// Load the first table
+if (tableSelect.value) {
+    loadTable(tableSelect.value);
+}
+
+
+</script>
+
+{% endblock %}
