@@ -1,8 +1,6 @@
-### Server Main ###
-import sys
 import os
-import threading
-import runpy
+import sys
+import subprocess
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -10,38 +8,30 @@ VEHICLE_DIR = os.path.join(BASE_DIR, "Vehicle_Access")
 WEB_DIR = os.path.join(BASE_DIR, "Web_Access")
 
 
-def run_vehicle():
-    sys.path.insert(0, VEHICLE_DIR)
-    runpy.run_path(
-        os.path.join(VEHICLE_DIR, "server_vehicle.py"),
-        run_name="__main__"
-    )
-
-
-def run_web():
-    sys.path.insert(0, WEB_DIR)
-    runpy.run_path(
-        os.path.join(WEB_DIR, "server_web.py"),
-        run_name="__main__"
-    )
-
-
 def main():
-    vehicle_thread = threading.Thread(
-        target=run_vehicle,
-        name="VehicleServer"
+    vehicle_server = subprocess.Popen(
+        [sys.executable, "server_vehicle.py"],
+        cwd=VEHICLE_DIR
     )
 
-    web_thread = threading.Thread(
-        target=run_web,
-        name="WebServer"
+    web_server = subprocess.Popen(
+        [sys.executable, "server_web.py"],
+        cwd=WEB_DIR
     )
 
-    vehicle_thread.start()
-    web_thread.start()
+    try:
+        vehicle_server.wait()
+        web_server.wait()
 
-    vehicle_thread.join()
-    web_thread.join()
+    except KeyboardInterrupt:
+        print("\nStopping servers...")
+
+    finally:
+        vehicle_server.terminate()
+        web_server.terminate()
+
+        vehicle_server.wait()
+        web_server.wait()
 
 
 if __name__ == "__main__":
