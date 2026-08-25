@@ -10,6 +10,17 @@
         max-width: 100%;
     }
 
+    .no-data {
+        font-size: 18px;
+        color: #666;
+        margin: 20px 0;
+    }
+
+    html[data-theme="dark"] .no-data {
+        color: #ccc;
+    }
+
+
     .table-selector {
         display: flex;
         align-items: center;
@@ -122,6 +133,7 @@
 
 <div class="database-container">
 
+    {% if tables %}
     <div class="table-selector">
 
         <label for="tableSelect">Table:</label>
@@ -141,6 +153,11 @@
         <span id="loading">Loading...</span>
 
     </div>
+    {% else %}
+    <div class="no-data">
+        No data stored.
+    </div>
+    {% endif %}
 
 
     <h2 id="tableTitle"></h2>
