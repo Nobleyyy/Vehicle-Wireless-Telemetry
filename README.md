@@ -15,8 +15,9 @@ A Python-based wireless telemetry system for collecting vehicle data from the CA
 - RS485 CAN HAT with MCP2515 onboard controller
 
 ## Software
+- Python Client (Vehicle)
 - Python Server
-- HTML Website Server
+- Flask Web Server
 
 ## Status
 > 🚧 **Project Status:** This project is currently in active development.
