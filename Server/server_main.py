@@ -15,7 +15,6 @@ DATABASE = os.path.join(WEB_DIR, "website", "database.db")
 CAR_DATABASE = os.path.join(BASE_DIR, "Data_Archive", "car_data.db")
 
 
-
 ## Functions ##
 def main():
     # Start vehicle connection server
@@ -29,65 +28,64 @@ def main():
         [sys.executable, "server_web.py"],
         cwd=WEB_DIR
     )
-
     print("Servers started.")
 
     try:
+        # Collect commandline commands
         commands(web_server)
-
     finally:
+        # Shutdown server
         print("Stopping servers...")
-
         vehicle_server.terminate()
         web_server.terminate()
 
         vehicle_server.wait()
         web_server.wait()
-
         print("Servers stopped.")
 
 
 def commands(web_server):
     while True:
         command = input("> ").strip().lower()
-
+        # Shutdown Server
         if command in ("quit", "stop", "end", "die", "kill"):
             return
-
+        # Restart Server
         elif command == "restart":
             print("Restarting server...")
             os.execv(sys.executable, [sys.executable] + sys.argv)
-
+        # List of admin account emails
         elif command == "admins":
             list_admins()
-
+        # Give admin to an account
         elif command.lower().startswith("admin "):
             email = command[6:].strip()
             if make_admin(email):
                 web_server = restart_web_server(web_server)
-
+        # Take away admin from an account
         elif command.lower().startswith("unadmin "):
             email = command[8:].strip()
             if remove_admin(email):
                 web_server = restart_web_server(web_server)
-
+        # List all session tables stored
         elif command.lower() == "sessions":
             list_sessions()
-
+        # Delete a session tabble
         elif command.lower().startswith("deletesession "):
             session = command[14:].strip()
             if delete_session(session):
                 web_server = restart_web_server(web_server)
-
+        # Capture if a non-existent command is entered
         elif command:
             print("Unknown command.")
 
+
 def restart_web_server(web_server):
     print("Restarting Flask server...")
-
+    # Stop flask server
     web_server.terminate()
     web_server.wait()
-
+    # Reopen flask server
     web_server = subprocess.Popen(
         [sys.executable, "server_web.py"],
         cwd=WEB_DIR
@@ -101,17 +99,15 @@ def restart_web_server(web_server):
 def list_admins():
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
-
+    # Build admin search statment
     cursor.execute(
         "SELECT email FROM user WHERE admin = 1"
     )
-
+    # Search for admin users
     admins = cursor.fetchall()
-
     connection.close()
 
     print("Admin users:")
-
     if not admins:
         print("No admin users found.")
         return
@@ -119,22 +115,22 @@ def list_admins():
     for admin in admins:
         print(f"- {admin[0]}")
 
+
 def make_admin(email):
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
-
+    # Check email of user exists
     cursor.execute(
         "SELECT email FROM user WHERE email = ?",
         (email,)
     )
-
     user = cursor.fetchone()
-
+    # User does not exist
     if not user:
         print(f"User not found: {email}")
         connection.close()
         return
-
+    # Make user admin
     cursor.execute(
         "UPDATE user SET admin = 1 WHERE email = ?",
         (email,)
@@ -142,26 +138,24 @@ def make_admin(email):
 
     connection.commit()
     connection.close()
-
     print(f"{email} is now an admin.")
 
 
 def remove_admin(email):
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
-
+    # Check email of user exists
     cursor.execute(
         "SELECT email FROM user WHERE email = ?",
         (email,)
     )
-
     user = cursor.fetchone()
-
+    # User does not exist
     if not user:
         print(f"User not found: {email}")
         connection.close()
         return
-
+    # Take away admin from user
     cursor.execute(
         "UPDATE user SET admin = 0 WHERE email = ?",
         (email,)
@@ -169,23 +163,22 @@ def remove_admin(email):
 
     connection.commit()
     connection.close()
-
     print(f"{email} is no longer an admin.")
+
 
 def list_sessions():
     connection = sqlite3.connect(CAR_DATABASE)
     cursor = connection.cursor()
-
+    # Build session search statment
     cursor.execute(
         "SELECT name FROM sqlite_master "
         "WHERE type = 'table' AND name LIKE 'session_%'"
     )
-
+    # Search for sessions
     tables = cursor.fetchall()
     connection.close()
 
     sessions = []
-
     for table in tables:
         try:
             session_number = int(table[0].split("_")[1])
@@ -194,15 +187,13 @@ def list_sessions():
             continue
 
     sessions.sort()
-
     if not sessions:
         print("No sessions found.")
         return
-
+    # Session list output formatting
     ranges = []
     start = sessions[0]
     previous = sessions[0]
-
     for session in sessions[1:]:
         if session == previous + 1:
             previous = session
@@ -220,7 +211,6 @@ def list_sessions():
 
     # Handle final group
     count = previous - start + 1
-
     if count >= 3:
         ranges.append(f"{start}-{previous}")
     else:
@@ -232,6 +222,7 @@ def list_sessions():
 
 
 def delete_session(session):
+    # Make sure value is a number
     try:
         session = int(session)
     except ValueError:
@@ -239,32 +230,27 @@ def delete_session(session):
         return
 
     table_name = f"session_{session}"
-
     connection = sqlite3.connect(CAR_DATABASE)
     cursor = connection.cursor()
-
     cursor.execute(
         "SELECT name FROM sqlite_master WHERE type = 'table'"
     )
-
+    # Build session table search statement
     cursor.execute(
         "SELECT name FROM sqlite_master "
         "WHERE type = 'table' AND name = ?",
         (table_name,)
     )
-
+    # Number does not exist
     table = cursor.fetchone()
-
     if not table:
         print(f"Session {session} not found.")
         connection.close()
         return
-
+    # Remove session table
     cursor.execute(f'DROP TABLE "{table_name}"')
-
     connection.commit()
     connection.close()
-
     print(f"Session {session} deleted.")
 
 
