@@ -7,6 +7,7 @@ import store_data as db
 # Package Imports
 import json
 import socket
+import ssl
 import time
 
 ## Classes ##
@@ -28,21 +29,50 @@ class Vehicle_Server:
     def __init__(self) -> None:
         """Initialize the server socket and message state."""
         self.connection = socket.socket()
-        self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        self.connection.bind((SERVER_IP, SERVER_PORT))
+        self.connection.setsockopt(
+            socket.SOL_SOCKET,
+            socket.SO_REUSEADDR,
+            1
+        )
+
+        self.connection.bind(
+            (SERVER_IP, SERVER_PORT)
+        )
+
         self.connection.listen(1)
+
+        # TLS configuration
+        self.ssl_context = ssl.SSLContext(
+            ssl.PROTOCOL_TLS_SERVER
+        )
+
+        self.ssl_context.load_cert_chain(
+            certfile=SERVER_CERTIFICATE,
+            keyfile=SERVER_PRIVATE_KEY
+        )
 
         self.msg_id = 0
         self.buffer = b""
 
     def connect(self):
-        """Wait for and accept a connection from a vehicle client."""
-        print(f"Waiting for connection on {SERVER_IP}:{SERVER_PORT}...")
+        """Wait for and accept a secure TLS connection."""
+        print(
+            f"Waiting for connection on "
+            f"{SERVER_IP}:{SERVER_PORT}..."
+        )
 
-        self.conn, self.addr = self.connection.accept()
+        raw_conn, self.addr = self.connection.accept()
 
-        print(f"Connected to {self.addr}")
+        self.conn = self.ssl_context.wrap_socket(
+            raw_conn,
+            server_side=True
+        )
+
+        print(
+            f"Secure connection established with "
+            f"{self.addr}"
+        )
 
     def disconnect(self):
         """Close the active client connection and reset server state."""

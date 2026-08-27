@@ -8,6 +8,7 @@ import can
 import cantools
 import json
 import socket
+import ssl
 import time
 
 ## Classes ##
@@ -106,10 +107,27 @@ class Data_Client():
     """
     def __init__(self) -> None:
         """
-        Initialise the client and establish a connection to the server and the package ID is initialised to zero.
+        Initialise the client and establish a secure TLS connection
+        to the server.
         """
-        self.connection = socket.socket()
-        self.connection.connect((SERVER_IP, SERVER_PORT))
+        raw_socket = socket.socket(
+            socket.AF_INET,
+            socket.SOCK_STREAM
+        )
+
+        context = ssl.create_default_context(
+            ssl.Purpose.SERVER_AUTH,
+            cafile=CA_CERTIFICATE
+        )
+
+        self.connection = context.wrap_socket(
+            raw_socket,
+            server_hostname=SERVER_HOSTNAME
+        )
+
+        self.connection.connect(
+            (SERVER_IP, SERVER_PORT)
+        )
 
         self.package_id = 0
 

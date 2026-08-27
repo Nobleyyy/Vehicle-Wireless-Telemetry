@@ -14,3 +14,7 @@ BROADCAST_DATA = True
 # Server Info
 SERVER_IP = "localhost"
 SERVER_PORT = 5001
+
+# TLS
+SERVER_HOSTNAME = "localhost"
+CA_CERTIFICATE = "Certificates/ca-cert.pem"
