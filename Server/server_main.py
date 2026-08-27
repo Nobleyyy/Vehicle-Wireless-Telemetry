@@ -54,6 +54,10 @@ def commands(web_server):
         if command in ("quit", "stop", "end"):
             return
 
+        elif command == "restart":
+            print("Restarting server...")
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+
         elif command == "admins":
             list_admins()
 
