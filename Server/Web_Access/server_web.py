@@ -1,7 +1,13 @@
 ### Server Web ###
 
+# Package Imports
+import logging
+
 # File Imports
 from website import create_app
+
+# Only show WARNING, ERROR and CRITICAL messages
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
 # Crerate flask object
 app = create_app()

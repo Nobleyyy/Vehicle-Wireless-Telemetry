@@ -88,3 +88,23 @@ def get_table_csv(table_name:str):
     writer.writerow(data["columns"])
     writer.writerows(data["rows"])
     return output.getvalue()
+
+def delete_table(table_name: str) -> bool:
+    # Only allow session tables to be deleted
+    if not table_name.startswith("session_"):
+        return False
+    # Make sure the table exists
+    if table_name not in get_table_names():
+        return False
+    conn = get_db()
+    try:
+        conn.execute(
+            f'DROP TABLE "{table_name}"'
+        )
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()

@@ -43,6 +43,17 @@
         border-radius: 2px;
     }
 
+    #deleteButton {
+        font-size: 15px;
+        padding: 2px 8px;
+        height: 25px;
+        cursor: pointer;
+        background: #dc3545;
+        color: #fff;
+        border: 1px solid #b02a37;
+        border-radius: 2px;
+    }
+
     #loading {
         display: none;
     }
@@ -148,6 +159,12 @@
         <button id="downloadButton" type="button">
             Download CSV
         </button>
+
+        {% if current_user.admin %}
+            <button id="deleteButton" type="button">
+                Delete Session
+            </button>
+        {% endif %}
 
         <span id="loading">Loading...</span>
 
@@ -260,6 +277,76 @@ async function loadTable(tableName) {
 }
 
 
+async function refreshTables() {
+
+    try {
+
+        const response = await fetch("/api/tables");
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        const currentSelection = tableSelect.value;
+        const newTables = data.tables;
+
+        const existingTables = Array.from(tableSelect.options)
+            .map(option => option.value);
+
+        // Only update if the list has changed
+        if (JSON.stringify(newTables) !== JSON.stringify(existingTables)) {
+
+            tableSelect.innerHTML = "";
+
+            newTables.forEach(table => {
+
+                const option = document.createElement("option");
+
+                option.value = table;
+                option.textContent = table.replace(
+                    "session_",
+                    "Session "
+                );
+
+                tableSelect.appendChild(option);
+
+            });
+
+            // Keep the current session if it still exists
+            if (newTables.includes(currentSelection)) {
+
+                tableSelect.value = currentSelection;
+
+            // Current session was deleted
+            } else if (newTables.length > 0) {
+
+                tableSelect.value = newTables[0];
+
+                loadTable(newTables[0]);
+
+            } else {
+
+                tableTitle.textContent = "";
+                tableHead.innerHTML = "";
+                tableBody.innerHTML = "";
+
+            }
+
+        }
+
+    } catch (error) {
+
+        console.error("Failed to refresh tables:", error);
+
+    }
+
+}
+
+// Check for database changes every 5 seconds
+setInterval(refreshTables, 30000);
+
 // Download currently selected table as CSV
 downloadButton.addEventListener("click", function () {
 
@@ -273,6 +360,56 @@ downloadButton.addEventListener("click", function () {
         `/api/table/csv?name=${encodeURIComponent(tableName)}`;
 
 });
+
+const deleteButton = document.getElementById("deleteButton");
+
+if (deleteButton) {
+
+    deleteButton.addEventListener("click", async function () {
+
+        const tableName = tableSelect.value;
+
+        if (!tableName) {
+            return;
+        }
+
+        const sessionNumber = tableName.replace("session_", "");
+
+        const confirmed = confirm(
+            `Are you sure you wish to delete session ${sessionNumber}?`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            const response = await fetch(
+                `/api/table/delete?name=${encodeURIComponent(tableName)}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to delete session");
+            }
+
+            // Reload the page after successful deletion
+            window.location.reload();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert("Failed to delete session.");
+
+        }
+
+    });
+
+}
 
 
 // Switch table without reloading the page

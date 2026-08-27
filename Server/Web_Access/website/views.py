@@ -62,6 +62,15 @@ def api_table():
 
     return jsonify(data)
 
+@views.route("/api/tables")
+@login_required
+def api_tables():
+    # Get current database tables
+    tables = d.get_table_names()
+
+    return jsonify({
+        "tables": tables
+    })
 
 @views.route("/api/table/csv")
 @login_required
@@ -86,3 +95,28 @@ def download_table_csv():
     )
 
     return response
+
+@views.route("/api/table/delete", methods=["DELETE"])
+@login_required
+def delete_table():
+    # Only administrators can delete tables
+    if not current_user.admin:
+        return jsonify({
+            "error": "Admin access required"
+        }), 403
+    # Get requested table
+    table_name = request.args.get("name")
+    if not table_name:
+        return jsonify({
+            "error": "No table specified"
+        }), 400
+    # Delete the table
+    if not d.delete_table(table_name):
+        return jsonify({
+            "error": "Invalid table or unable to delete table"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "table": table_name
+    })
