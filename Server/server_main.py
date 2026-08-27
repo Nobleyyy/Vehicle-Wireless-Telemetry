@@ -51,7 +51,7 @@ def commands(web_server):
     while True:
         command = input("> ").strip().lower()
 
-        if command in ("quit", "stop", "end"):
+        if command in ("quit", "stop", "end", "die", "kill"):
             return
 
         elif command == "restart":
