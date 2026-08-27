@@ -4,15 +4,13 @@
 from vehicle_constants import *
 
 # Package Imports
-#import can
-#import cantools
+import can
+import cantools
 import json
 import socket
-import struct
 import time
 
 ## Classes ##
-'''
 class Car():
     """
     Interface for reading and decoding CAN bus messages.
@@ -96,7 +94,7 @@ class Car():
 
         for signal_name, value in signals.items():
             print(f"{signal_name}: {value}")
-'''
+
 
 class Data_Client():
     """
@@ -146,42 +144,31 @@ class Data_Client():
 
 
 ## Main Program ##
-
-#fs_car = Car()
-
-
-#############################
-# Simulated data
-import csv
-
-def read_csv(filename="ecu_signals.csv"):
-    if not hasattr(read_csv, "reader"):
-        read_csv.file = open(filename, "r", newline="")
-        read_csv.reader = csv.DictReader(read_csv.file)
-
-    try:
-        return next(read_csv.reader)
-    except StopIteration:
-        read_csv.file.close()
-        del read_csv.reader
-        del read_csv.file
-        return None
-
-#############################
-
-
+fs_car = Car()
 comms = Data_Client()
 
-while BROADCAST_DATA:
-    # Input data
-    data = read_csv()
-    time.sleep(0.2)
+try:
+    while BROADCAST_DATA:
+        # Read CAN frame
+        message = fs_car.read_frame()
 
-    # Exit
-    if data == None:
-        break
+        # No message received
+        if message is None:
+            continue
 
-    # Send data off
-    comms.send_data(data)
+        # Decode CAN frame
+        data = fs_car.decode_frame(message)
 
-comms.connection.close()
+        # Ignore messages that cannot be decoded
+        if data is None:
+            continue
+
+        # Print decoded signals
+        fs_car.print_signal(data)
+
+        # Send decoded data
+        comms.send_data(data)
+
+finally:
+    fs_car.close()
+    comms.connection.close()
