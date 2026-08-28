@@ -58,7 +58,7 @@ class Vehicle_Server:
     def connect(self):
         """Wait for and accept a secure TLS connection."""
         print(
-            f"Waiting for connection on "
+            f"Waiting for vehicle connection on "
             f"{SERVER_IP}:{SERVER_PORT}..."
         )
 
@@ -70,7 +70,7 @@ class Vehicle_Server:
         )
 
         print(
-            f"Secure connection established with "
+            f"Secure vehicle connection established with "
             f"{self.addr}"
         )
 
@@ -78,7 +78,7 @@ class Vehicle_Server:
         """Close the active client connection and reset server state."""
         self.conn.close()
         self.buffer = b""
-        print("Client disconnected")
+        print("Vehicle client disconnected")
         self.msg_id = 0
 
     def receive(self) -> tuple[dict, float, int] | None:
