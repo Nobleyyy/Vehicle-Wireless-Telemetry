@@ -1,14 +1,13 @@
+### Generate Certificates ###
+
+# Package Imports
 from pathlib import Path
 import ipaddress
 import shutil
 import subprocess
 import sys
 
-
-# ============================================================
-# Configuration
-# ============================================================
-
+# Constants
 CERT_DIR = Path(__file__).resolve().parent / "Certificates"
 
 CA_KEY = CERT_DIR / "ca-key.pem"
@@ -24,10 +23,7 @@ CA_VALIDITY_DAYS = 3650
 SERVER_VALIDITY_DAYS = 825
 
 
-# ============================================================
-# Utility Functions
-# ============================================================
-
+## Functions ##
 def run_command(command):
     """Run an OpenSSL command and stop if it fails."""
 
@@ -149,23 +145,16 @@ subjectAltName = @alt_names
     SERVER_CONFIG.write_text(config, encoding="utf-8")
 
 
-# ============================================================
 # Main Certificate Generation
-# ============================================================
-
 def main():
 
     print("=" * 60)
     print("Vehicle Telemetry Certificate Generator")
     print("=" * 60)
     print()
-
     check_openssl()
 
-    # --------------------------------------------------------
     # Ask for server address
-    # --------------------------------------------------------
-
     address_info = get_server_address()
 
     print()
@@ -176,21 +165,13 @@ def main():
 
     for ip_address in address_info["ip"]:
         print(f"  IP:  {ip_address}")
-
     print()
 
-    # --------------------------------------------------------
     # Create Certificates directory
-    # --------------------------------------------------------
-
     CERT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # --------------------------------------------------------
     # Generate CA private key
-    # --------------------------------------------------------
-
     print("[1/6] Generating CA private key...")
-
     run_command([
         "openssl",
         "genrsa",
@@ -199,10 +180,7 @@ def main():
         "4096"
     ])
 
-    # --------------------------------------------------------
     # Generate CA certificate
-    # --------------------------------------------------------
-
     print("[2/6] Generating CA certificate...")
 
     run_command([
@@ -221,10 +199,8 @@ def main():
         "/C=GB/O=VehicleTelemetry/OU=CA/CN=VehicleTelemetry-CA"
     ])
 
-    # --------------------------------------------------------
-    # Generate server private key
-    # --------------------------------------------------------
 
+    # Generate server private key
     print("[3/6] Generating server private key...")
 
     run_command([
@@ -235,18 +211,12 @@ def main():
         "2048"
     ])
 
-    # --------------------------------------------------------
     # Create server certificate configuration
-    # --------------------------------------------------------
-
     print("[4/6] Creating server certificate configuration...")
 
     create_server_config(address_info)
 
-    # --------------------------------------------------------
     # Generate server CSR
-    # --------------------------------------------------------
-
     print("[5/6] Generating server CSR...")
 
     run_command([
@@ -262,10 +232,7 @@ def main():
         str(SERVER_CONFIG)
     ])
 
-    # --------------------------------------------------------
     # Sign server certificate
-    # --------------------------------------------------------
-
     print("[6/6] Signing server certificate...")
 
     run_command([
@@ -290,10 +257,7 @@ def main():
         str(SERVER_CONFIG)
     ])
 
-    # --------------------------------------------------------
     # Finished
-    # --------------------------------------------------------
-
     print()
     print("=" * 60)
     print("Certificate generation complete!")
@@ -320,6 +284,6 @@ def main():
 
     print()
 
-
+## Main Program ##
 if __name__ == "__main__":
     main()
