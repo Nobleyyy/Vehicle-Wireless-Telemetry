@@ -7,7 +7,7 @@ A Python-based wireless telemetry system for collecting vehicle data from the CA
 - 📊 **SQL Data Logging** – Store telemetry in a SQL database for historical analysis and diagnostics.
 - 🌐 **Web Dashboard** – Monitor live vehicle telemetry through the web interface.
 - 🔧 **Modular Design** – Easily extend support for additional CAN messages, sensors, and dashboard features.
-- 📈 **Historical Data Visualization** – Review logged telemetry through charts and graphs on the website.
+- 📈 **Data Visualization** – Review logged telemetry through charts and graphs on the website.
 
 ## Hardware
 - Windows Based Server
