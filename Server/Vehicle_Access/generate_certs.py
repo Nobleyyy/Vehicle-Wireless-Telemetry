@@ -6,6 +6,7 @@ import ipaddress
 import shutil
 import subprocess
 import sys
+import yaml
 
 # Constants
 CERT_DIR = Path(__file__).resolve().parent / "Certificates"
@@ -24,6 +25,15 @@ SERVER_VALIDITY_DAYS = 825
 
 
 ## Functions ##
+def load_config():
+    """Load server configuration from config.txt."""
+
+    config_path = Path(__file__).resolve().parent.parent / "config.txt"
+
+    with open(config_path, "r") as file:
+        return yaml.safe_load(file) or {}
+
+
 def run_command(command):
     """Run an OpenSSL command and stop if it fails."""
 
@@ -50,48 +60,45 @@ def check_openssl():
 
 
 def get_server_address():
-    """Ask the user for the server IP address or hostname."""
+    """Get the server IP address or hostname from config.txt."""
 
-    while True:
-        address = input(
-            "Enter the server IP address or hostname: "
-        ).strip()
+    config = load_config()
 
-        if not address:
-            print("Please enter an address.")
-            continue
+    address = config.get("server_ip") or "127.0.0.1"
+    address = address.strip()
 
-        # localhost gets special treatment
-        if address.lower() == "localhost":
-            return {
-                "dns": ["localhost"],
-                "ip": ["127.0.0.1"],
-                "common_name": "localhost"
-            }
+    # localhost gets special treatment
+    if address.lower() == "localhost":
+        return {
+            "dns": ["localhost"],
+            "ip": ["127.0.0.1"],
+            "common_name": "localhost"
+        }
 
-        # Check whether the input is an IP address
-        try:
-            ipaddress.ip_address(address)
-
-            return {
-                "dns": [],
-                "ip": [address],
-                "common_name": address
-            }
-
-        except ValueError:
-            pass
-
-        # If it isn't an IP, treat it as a hostname
-        if " " in address:
-            print("Invalid hostname.")
-            continue
+    # Check whether the input is an IP address
+    try:
+        ipaddress.ip_address(address)
 
         return {
-            "dns": [address],
-            "ip": [],
+            "dns": [],
+            "ip": [address],
             "common_name": address
         }
+
+    except ValueError:
+        pass
+
+    # Treat it as a hostname
+    if " " in address:
+        print("ERROR: Invalid hostname.")
+        sys.exit(1)
+
+    return {
+        "dns": [address],
+        "ip": [],
+        "common_name": address
+    }
+
 
 
 def create_server_config(address_info):

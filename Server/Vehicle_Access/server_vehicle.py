@@ -9,6 +9,8 @@ import json
 import socket
 import ssl
 import time
+from pathlib import Path
+import yaml
 
 ## Classes ##
 class Vehicle_Server:
@@ -128,6 +130,26 @@ class Vehicle_Server:
         package_to_print["timestamp"] = self.date_to_string(package_to_print["timestamp"])
         print(package_to_print)
 
+
+## Functions ##
+def load_config():
+    config_path = Path(__file__).resolve().parent.parent / "config.txt"
+
+    with open(config_path, "r") as file:
+        return yaml.safe_load(file) or {}
+
+# Run config
+config = load_config()
+
+SERVER_IP = config.get("server_ip") or DEFAULT_SERVER_IP
+
+if SERVER_IP.lower() == "localhost":
+    SERVER_IP = "127.0.0.1"
+
+SERVER_PORT = int(
+    config.get("server_vehicle_port") or DEFAULT_SERVER_PORT
+)
+    
 ## Main Program ##
 comms = Vehicle_Server()
 current_table = None

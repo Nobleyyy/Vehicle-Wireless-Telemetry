@@ -1,8 +1,8 @@
 ### Vehicle Server Constants ###
 
 # Server Info
-SERVER_IP = "localhost"
-SERVER_PORT = 5001
+DEFAULT_SERVER_IP = "localhost"
+DEFAULT_SERVER_PORT = 5001
 
 # TLS
 from pathlib import Path
