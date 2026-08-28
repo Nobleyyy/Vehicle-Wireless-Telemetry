@@ -47,8 +47,11 @@ def main():
 def commands(web_server):
     while True:
         command = input("> ").strip().lower()
+        # Show all commands
+        if command == "help":
+            show_help()
         # Shutdown Server
-        if command in ("quit", "stop", "end", "die", "kill"):
+        elif command in ("quit", "stop", "end", "die", "kill"):
             return
         # Restart Server
         elif command == "restart":
@@ -87,6 +90,24 @@ def commands(web_server):
         elif command:
             print("Unknown command.")
 
+
+def show_help():
+    print("""
+Available commands:
+
+  help                         Show this help message
+  users                        List standard users
+  admins                       List admin users
+  admin <email>                Give admin privileges
+  unadmin <email>              Remove admin privileges
+  deleteuser <email>           Delete a user
+  sessions                     List vehicle sessions
+  deletesession <number>      Delete a session
+  restart                      Restart the server
+  quit / stop / end / die / kill
+                               Stop the server
+""")
+    
 
 def restart_web_server(web_server):
     print("Restarting Flask server...")
