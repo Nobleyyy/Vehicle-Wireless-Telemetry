@@ -60,7 +60,7 @@ def get_latest_entry():
         if record.get("timestamp"):
             try:
                 record["timestamp"] = time.strftime(
-                    "%d/%m/%y %H:%M:%S",
+                    "%Y-%m-%d %H:%M:%S",
                     time.localtime(float(record["timestamp"]))
                 )
             except (ValueError, TypeError, OverflowError):

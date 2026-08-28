@@ -1,145 +1,398 @@
 <!DOCTYPE html>
 <html>
+
     <head>
+
+        <!-- Set the character encoding used by the webpage -->
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link
-        rel="stylesheet"
-        href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-        crossorigin="anonymous"
+
+        <!--
+            Make the website responsive on different screen sizes.
+
+            The viewport width is set to the device width and the
+            initial zoom level is set to 1.
+        -->
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1"
         />
+
+
+        <!--
+            Load Bootstrap 4.4.1.
+
+            Bootstrap provides pre-built CSS classes for things such
+            as the navbar, buttons, forms and responsive layouts.
+        -->
         <link
-        rel="stylesheet"
-        href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-        crossorigin="anonymous"
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+            crossorigin="anonymous"
         />
+
+
+        <!--
+            Load Font Awesome.
+
+            Font Awesome provides icons that can be used throughout
+            the website.
+        -->
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+            crossorigin="anonymous"
+        />
+
+
         <style>
+
+            /* ========================================
+               DEFAULT / LIGHT THEME
+               ======================================== */
+
+            /*
+                Set the default page background to white
+                and the text colour to dark grey.
+
+                The transition makes theme changes appear
+                smoother instead of changing instantly.
+            */
             body {
                 background-color: #fff;
                 color: #212529;
                 transition: background-color 0.2s, color 0.2s;
             }
 
-            /* Dark theme */
+
+            /* ========================================
+               DARK THEME
+               ======================================== */
+
+            /*
+                When the HTML element has data-theme="dark",
+                change the page background and text colours.
+            */
             html[data-theme="dark"] body {
                 background-color: #212529;
                 color: #fff;
             }
 
-            /* Dark theme navbar */
+
+            /*
+                Change the navbar background colour when
+                dark mode is selected.
+            */
             html[data-theme="dark"] .navbar {
                 background-color: #343a40 !important;
             }
 
-            /* Light theme navbar */
+
+            /* ========================================
+               LIGHT THEME NAVBAR
+               ======================================== */
+
+            /*
+                Set the navbar background colour when
+                light mode is selected.
+            */
             html[data-theme="light"] .navbar {
                 background-color: #5a6268 !important;
             }
 
+
+            /*
+                Set the navigation link colour in light mode.
+            */
             html[data-theme="light"] .navbar .nav-link {
                 color: rgba(255, 255, 255, 0.85);
             }
 
+
+            /*
+                Make navigation links completely white
+                when the user hovers over them.
+            */
             html[data-theme="light"] .navbar .nav-link:hover {
                 color: #fff;
             }
 
-            /* System dark mode */
+
+            /* ========================================
+               SYSTEM DARK MODE
+               ======================================== */
+
+            /*
+                If the user has not manually selected a theme,
+                check the operating system's preferred colour scheme.
+
+                This rule applies when the system is using dark mode
+                and no data-theme="light" attribute has been set.
+            */
             @media (prefers-color-scheme: dark) {
+
                 html:not([data-theme="light"]) body {
                     background-color: #212529;
                     color: #fff;
                 }
 
+
+                /*
+                    Make the navbar dark when the operating system
+                    is using dark mode.
+                */
                 html:not([data-theme="light"]) .navbar {
                     background-color: #343a40 !important;
                 }
+
             }
 
-            /* System light mode */
+
+            /* ========================================
+               SYSTEM LIGHT MODE
+               ======================================== */
+
+            /*
+                If the user has not manually selected dark mode,
+                use the operating system's light mode preference.
+            */
             @media (prefers-color-scheme: light) {
+
                 html:not([data-theme="dark"]) body {
                     background-color: #fff;
                     color: #212529;
                 }
 
+
+                /*
+                    Set the navbar colour for system light mode.
+                */
                 html:not([data-theme="dark"]) .navbar {
                     background-color: #5a6268 !important;
                 }
 
+
+                /*
+                    Set the navigation link colour.
+                */
                 html:not([data-theme="dark"]) .navbar .nav-link {
                     color: rgba(255, 255, 255, 0.85);
                 }
 
+
+                /*
+                    Make navigation links white when hovered over.
+                */
                 html:not([data-theme="dark"]) .navbar .nav-link:hover {
                     color: #fff;
                 }
+
             }
+
+
+            /* ========================================
+               THEME BUTTON
+               ======================================== */
+
+            /*
+                Add spacing between the navigation links
+                and the theme button.
+            */
             #themeToggle {
                 margin-left: 10px;
             }
 
-            /* Keep theme button on the same line as hamburger on mobile */
+
+            /*
+                On smaller screens, position the theme button
+                in the top-right of the navbar.
+
+                This keeps it visible alongside the hamburger
+                menu button.
+            */
             @media (max-width: 991.98px) {
+
                 #themeToggle {
                     position: absolute;
                     right: 15px;
                     top: 10px;
                     margin-left: 0;
                 }
+
             }
+
         </style>
-        <link rel="icon" type="image/png"
-              href="{{ url_for('static', filename='favicon.ico') }}">
-        <title>{% block title %}Home{% endblock %}</title>
+
+
+        <!--
+            Set the website favicon.
+
+            url_for() is a Flask/Jinja function that generates
+            the correct URL for a file in the static folder.
+        -->
+        <link
+            rel="icon"
+            type="image/png"
+            href="{{ url_for('static', filename='favicon.ico') }}"
+        />
+
+
+        <!--
+            Page title.
+
+            Child templates can replace this block with their
+            own title, such as "Login", "Live" or "Database".
+        -->
+        <title>
+            {% block title %}Home{% endblock %}
+        </title>
+
     </head>
+
+
     <body>
+
+
+        <!-- ========================================
+             NAVIGATION BAR
+             ======================================== -->
+
+        <!--
+            Bootstrap navbar.
+
+            navbar-expand-lg means the navigation links are
+            displayed normally on large screens but collapse
+            into a hamburger menu on smaller screens.
+
+            navbar-dark provides styling designed for dark
+            navigation bars.
+        -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-            <!-- Hamburger -->
-            <button class="navbar-toggler" type="button"
-                    data-toggle="collapse"
-                    data-target="#navbar"
-                    aria-controls="navbar"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation">
+
+            <!-- ========================================
+                 HAMBURGER BUTTON
+                 ======================================== -->
+
+            <!--
+                This button appears on smaller screens.
+
+                Clicking it opens and closes the navigation links.
+            -->
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-toggle="collapse"
+                data-target="#navbar"
+                aria-controls="navbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+
+                <!-- Bootstrap hamburger menu icon -->
                 <span class="navbar-toggler-icon"></span>
+
             </button>
 
 
-            <!-- Collapsible navigation links -->
-            <div class="collapse navbar-collapse" id="navbar">
+            <!-- ========================================
+                 NAVIGATION LINKS
+                 ======================================== -->
+
+            <!--
+                This div contains the navigation links.
+
+                Bootstrap collapses this section on smaller screens.
+            -->
+            <div
+                class="collapse navbar-collapse"
+                id="navbar"
+            >
 
                 <div class="navbar-nav">
 
+
+                    <!--
+                        Check whether the current user is logged in.
+
+                        user.is_authenticated is provided by Flask-Login.
+                    -->
                     {% if user.is_authenticated %}
 
-                        <a class="nav-item nav-link" id="home" href="/">
+
+                        <!-- Link to the home page -->
+                        <a
+                            class="nav-item nav-link"
+                            id="home"
+                            href="/"
+                        >
                             Home
                         </a>
 
-                        <a class="nav-item nav-link" id="live" href="/live">
+
+                        <!-- Link to the live data page -->
+                        <a
+                            class="nav-item nav-link"
+                            id="live"
+                            href="/live"
+                        >
                             Live
                         </a>
 
-                        <a class="nav-item nav-link" id="database" href="/database">
+
+                        <!-- Link to the database page -->
+                        <a
+                            class="nav-item nav-link"
+                            id="database"
+                            href="/database"
+                        >
                             Database
                         </a>
 
-                        <a class="nav-item nav-link" id="logout" href="/logout">
+
+                        <!--
+                            Log the user out.
+
+                            The Flask /logout route handles the
+                            logout process.
+                        -->
+                        <a
+                            class="nav-item nav-link"
+                            id="logout"
+                            href="/logout"
+                        >
                             Logout
                         </a>
 
+
                     {% else %}
 
-                        <a class="nav-item nav-link" id="login" href="/login">
+
+                        <!--
+                            If the user is not logged in,
+                            display the Login link.
+                        -->
+                        <a
+                            class="nav-item nav-link"
+                            id="login"
+                            href="/login"
+                        >
                             Login
                         </a>
 
-                        <a class="nav-item nav-link" id="signUp" href="/sign-up">
+
+                        <!--
+                            Display the Sign Up link for
+                            unauthenticated users.
+                        -->
+                        <a
+                            class="nav-item nav-link"
+                            id="signUp"
+                            href="/sign-up"
+                        >
                             Sign Up
                         </a>
+
 
                     {% endif %}
 
@@ -148,89 +401,356 @@
             </div>
 
 
-            <!-- Theme button - ALWAYS visible -->
-            <button id="themeToggle"
-                    class="btn btn-outline-light btn-sm ml-auto">
+            <!-- ========================================
+                 THEME BUTTON
+                 ======================================== -->
+
+            <!--
+                Theme selection button.
+
+                JavaScript changes the text between:
+
+                    System
+                    Light
+                    Dark
+
+                The button is always visible, including
+                on smaller screens.
+            -->
+            <button
+                id="themeToggle"
+                class="btn btn-outline-light btn-sm ml-auto"
+            >
                 System
             </button>
+
         </nav>
 
-        
+
+        <!-- ========================================
+             FLASH MESSAGES
+             ======================================== -->
+
+        <!--
+            Flask's get_flashed_messages() retrieves messages
+            that have been stored using Flask's flash() function.
+
+            with_categories=true also gives each message a
+            category such as "error" or "success".
+        -->
         {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-            {% if category == 'error' %}
-            <div class="alert alert-danger alter-dismissable fade show" role="alert">
-                {{ message }}
-                <button type="button" class="close" data-dismiss="alert">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            {% else %}
-            <div class="alert alert-success alter-dismissable fade show" role="alert">
-                {{ message }}
-                <button type="button" class="close" data-dismiss="alert">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+
+            <!-- Check whether there are any messages -->
+            {% if messages %}
+
+                <!-- Loop through every flashed message -->
+                {% for category, message in messages %}
+
+
+                    <!-- ========================================
+                         ERROR MESSAGE
+                         ======================================== -->
+
+                    {% if category == 'error' %}
+
+                        <!--
+                            Display error messages using Bootstrap's
+                            red "alert-danger" styling.
+                        -->
+                        <div
+                            class="alert alert-danger alter-dismissable fade show"
+                            role="alert"
+                        >
+
+                            <!-- Display the actual message -->
+                            {{ message }}
+
+
+                            <!--
+                                Button allowing the user to close
+                                the alert.
+                            -->
+                            <button
+                                type="button"
+                                class="close"
+                                data-dismiss="alert"
+                            >
+
+                                <span aria-hidden="true">
+                                    &times;
+                                </span>
+
+                            </button>
+
+                        </div>
+
+
+                    <!-- ========================================
+                         SUCCESS MESSAGE
+                         ======================================== -->
+
+                    {% else %}
+
+                        <!--
+                            Display non-error messages using
+                            Bootstrap's green success styling.
+                        -->
+                        <div
+                            class="alert alert-success alter-dismissable fade show"
+                            role="alert"
+                        >
+
+                            <!-- Display the message -->
+                            {{ message }}
+
+
+                            <!-- Button used to close the message -->
+                            <button
+                                type="button"
+                                class="close"
+                                data-dismiss="alert"
+                            >
+
+                                <span aria-hidden="true">
+                                    &times;
+                                </span>
+
+                            </button>
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
             {% endif %}
-            {% endfor %}
-        {% endif %}
-        {% endwith%}
+
+        {% endwith %}
 
 
+        <!-- ========================================
+             MAIN PAGE CONTENT
+             ======================================== -->
+
+        <!--
+            Bootstrap container.
+
+            This keeps the main page content centred and
+            gives it appropriate horizontal spacing.
+        -->
         <div class="container">
+
+            <!--
+                Child templates insert their own content here.
+
+                For example, login.html, live.html and
+                database.html all override this block.
+            -->
             {% block content %}
 
             {% endblock %}
+
         </div>
 
 
+        <!-- ========================================
+             JAVASCRIPT LIBRARIES
+             ======================================== -->
+
+        <!--
+            Load jQuery.
+
+            Bootstrap 4 uses jQuery for some of its
+            interactive components.
+        -->
         <script
-        src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-        crossorigin="anonymous"
+            src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"
         ></script>
+
+
+        <!--
+            Load Popper.js.
+
+            Bootstrap uses Popper for components such as
+            dropdowns and positioning.
+        -->
         <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-        crossorigin="anonymous"
+            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B9Y1QKtv3Rn7W3mgPx6U9/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"
         ></script>
+
+
+        <!--
+            Load Bootstrap's JavaScript functionality.
+
+            This enables features such as the responsive
+            hamburger menu and dismissible alerts.
+        -->
         <script
-        src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-        crossorigin="anonymous"
+            src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"
         ></script>
+
+
+        <!-- ========================================
+             THEME SWITCHING JAVASCRIPT
+             ======================================== -->
+
         <script>
-            const themeToggle = document.getElementById("themeToggle");
 
-            const themes = ["system", "light", "dark"];
+            /*
+                Find the theme button in the page.
+            */
+            const themeToggle =
+                document.getElementById("themeToggle");
 
-            let currentTheme = localStorage.getItem("theme") || "system";
 
+            /*
+                Define the three available theme options.
+
+                The order determines the order in which
+                the button cycles through the themes.
+            */
+            const themes = [
+                "system",
+                "light",
+                "dark"
+            ];
+
+
+            /*
+                Get the previously selected theme from
+                the browser's localStorage.
+
+                If no theme has been saved, default to "system".
+            */
+            let currentTheme =
+                localStorage.getItem("theme") || "system";
+
+
+            /*
+                Apply the selected theme to the webpage.
+            */
             function applyTheme(theme) {
+
+
+                /*
+                    System mode removes the data-theme attribute.
+
+                    This allows the CSS @media
+                    prefers-color-scheme rules to decide
+                    whether the page should be light or dark.
+                */
                 if (theme === "system") {
-                    document.documentElement.removeAttribute("data-theme");
+
+                    document.documentElement.removeAttribute(
+                        "data-theme"
+                    );
+
                 } else {
-                    document.documentElement.setAttribute("data-theme", theme);
+
+                    /*
+                        Light or dark mode explicitly sets
+                        the data-theme attribute on the HTML element.
+
+                        For example:
+
+                            <html data-theme="dark">
+
+                        The CSS rules above then apply the
+                        appropriate colours.
+                    */
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        theme
+                    );
+
                 }
 
+
+                /*
+                    Update the button text.
+
+                    This converts:
+
+                        system -> System
+                        light  -> Light
+                        dark   -> Dark
+                */
                 themeToggle.textContent =
-                    theme.charAt(0).toUpperCase() + theme.slice(1);
+                    theme.charAt(0).toUpperCase()
+                    + theme.slice(1);
+
             }
 
-            themeToggle.addEventListener("click", function () {
-                let currentIndex = themes.indexOf(currentTheme);
 
-                currentTheme = themes[(currentIndex + 1) % themes.length];
+            /*
+                Run this function whenever the theme button
+                is clicked.
+            */
+            themeToggle.addEventListener(
+                "click",
+                function () {
 
-                localStorage.setItem("theme", currentTheme);
 
-                applyTheme(currentTheme);
-            });
+                    /*
+                        Find the position of the current theme
+                        in the themes array.
+                    */
+                    let currentIndex =
+                        themes.indexOf(currentTheme);
 
+
+                    /*
+                        Move to the next theme.
+
+                        The modulo operator makes the list loop
+                        back to the beginning after "dark".
+
+                        System -> Light -> Dark -> System
+                    */
+                    currentTheme =
+                        themes[
+                            (currentIndex + 1)
+                            % themes.length
+                        ];
+
+
+                    /*
+                        Save the selected theme in localStorage.
+
+                        This means the user's choice is remembered
+                        when they navigate to another page or
+                        return to the website later.
+                    */
+                    localStorage.setItem(
+                        "theme",
+                        currentTheme
+                    );
+
+
+                    /*
+                        Apply the newly selected theme.
+                    */
+                    applyTheme(currentTheme);
+
+                }
+            );
+
+
+            /*
+                Apply the saved/current theme when the page
+                first loads.
+            */
             applyTheme(currentTheme);
+
         </script>
 
+
     </body>
+
 </html>

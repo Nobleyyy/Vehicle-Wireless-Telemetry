@@ -4,53 +4,1066 @@
 
 {% block content %}
 
-<h1>This is the live page</h1>
+<!-- Main heading shown at the top of the live data page -->
+<h1>Live Data Page</h1>
 
+<!--
+    This div is used to display the most recent vehicle data
+    received from the Flask server.
+-->
 <div id="vehicle-data">
     Waiting for data...
 </div>
 
+<!--
+    Graph controls are hidden initially.
+    They become visible once numeric data is received.
+-->
+<div id="graph-controls" style="margin-top: 20px; display: none;">
+
+    <div>
+        <strong style="font-size: 20px;">Graph data:</strong>
+    </div>
+
+    <!--
+        JavaScript dynamically adds checkboxes here.
+        Each checkbox represents a field that can be graphed.
+    -->
+    <div id="graph-options" style="margin-top: 8px;">
+    </div>
+
+    <div style="margin-top: 10px;">
+
+        <!--
+            Allows the user to show or hide the individual
+            data points displayed on the graphs.
+        -->
+        <label style="margin-right: 15px;">
+            <input
+                type="checkbox"
+                id="points-toggle"
+                checked
+            >
+            Show points
+        </label>
+
+        <!--
+            Allows the user to select or deselect all
+            available graph options at once.
+        -->
+        <label>
+            <input
+                type="checkbox"
+                id="toggle-all"
+            >
+            Toggle all
+        </label>
+
+    </div>
+</div>
+
+<!--
+    Graphs are dynamically created and inserted into this div.
+-->
+<div id="graphs" style="margin-top: 20px;">
+</div>
+
+<!--
+    Load Chart.js from the jsDelivr CDN.
+    Chart.js is used to create and display the line graphs.
+-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 
-const events = new EventSource(
-    "/live?stream=1"
+// ========================================
+// Elements
+// ========================================
+
+// Get the HTML element containing the graph controls.
+const graphControls =
+    document.getElementById("graph-controls");
+
+// Get the container where graph field checkboxes will be added.
+const graphOptions =
+    document.getElementById("graph-options");
+
+// Get the checkbox used to show or hide graph points.
+const pointsToggle =
+    document.getElementById("points-toggle");
+
+// Get the checkbox used to select or deselect all graphs.
+const toggleAll =
+    document.getElementById("toggle-all");
+
+// Get the container where the actual graphs will be displayed.
+const graphsContainer =
+    document.getElementById("graphs");
+
+// Get the element used to display the latest vehicle data.
+const vehicleData =
+    document.getElementById("vehicle-data");
+
+
+// ========================================
+// Data storage
+// ========================================
+
+// Store all received vehicle records in an array.
+const records = [];
+
+// Store each Chart.js graph using its field name as the key.
+const charts = {};
+
+
+// ========================================
+// Graph colours
+// ========================================
+
+// List of colours used for the different graphs.
+const graphColors = [
+    "#007bff",
+    "#dc3545",
+    "#28a745",
+    "#ffc107",
+    "#6f42c1",
+    "#fd7e14",
+    "#20c997",
+    "#e83e8c",
+    "#17a2b8",
+    "#6610f2"
+];
+
+// Store which colour has been assigned to each graph field.
+const graphColorMap = {};
+
+
+// ========================================
+// Get graph colour
+// ========================================
+
+function getGraphColor(key) {
+
+    // If this field does not already have a colour,
+    // assign it one from the colour list.
+    if (!graphColorMap[key]) {
+
+        // Count how many colours have already been assigned.
+        const index =
+            Object.keys(graphColorMap).length;
+
+        // Assign a colour to this graph field.
+        // The modulo operator allows the colours to repeat
+        // if there are more graphs than colours.
+        graphColorMap[key] =
+            graphColors[
+                index % graphColors.length
+            ];
+    }
+
+    // Return the colour assigned to this field.
+    return graphColorMap[key];
+}
+
+
+// ========================================
+// Get numeric value
+// ========================================
+
+function getNumericValue(value) {
+
+    // Return null when there is no usable value.
+    if (
+        value === null ||
+        value === "" ||
+        value === undefined
+    ) {
+        return null;
+    }
+
+    // Convert the value into a JavaScript number.
+    const number = Number(value);
+
+    // If the conversion did not produce a valid number,
+    // return null instead.
+    if (!Number.isFinite(number)) {
+        return null;
+    }
+
+    // Return the valid numeric value.
+    return number;
+}
+
+
+// ========================================
+// Format time
+// ========================================
+
+function formatTime(timestamp) {
+
+    // Return an empty string if no timestamp was provided.
+    if (!timestamp) {
+        return "";
+    }
+
+    // Convert the timestamp into a JavaScript Date object.
+    const date = new Date(timestamp);
+
+    // Check whether the date is valid.
+    if (!Number.isFinite(date.getTime())) {
+        return "";
+    }
+
+    // Convert the date into a readable time such as:
+    // 17:34:25
+    return date.toLocaleTimeString(
+        [],
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        }
+    );
+}
+
+
+// ========================================
+// Apply point visibility
+// ========================================
+
+function applyPointVisibility(chart) {
+
+    // Check whether the "Show points" checkbox is selected.
+    const showPoints = pointsToggle.checked;
+
+    // Get the first dataset used by the graph.
+    const dataset = chart.data.datasets[0];
+
+    // Show small points when enabled, otherwise hide them.
+    dataset.pointRadius = showPoints ? 2 : 0;
+
+    // Make the point slightly larger when the mouse hovers over it.
+    dataset.pointHoverRadius = showPoints ? 4 : 0;
+
+    // Disable the invisible hit area when points are hidden.
+    dataset.pointHitRadius = 0;
+
+}
+
+
+// ========================================
+// Add graph checkbox
+// ========================================
+
+function addGraphOption(key) {
+
+    // Check whether a checkbox for this field already exists.
+    // This prevents duplicate checkboxes being created.
+    if (
+        document.getElementById(
+            "graph-option-" + key
+        )
+    ) {
+        return;
+    }
+
+    // Create a new checkbox input element.
+    const checkbox =
+        document.createElement("input");
+
+    // Set the element type to checkbox.
+    checkbox.type = "checkbox";
+
+    // Give the checkbox a unique ID based on the field name.
+    checkbox.id =
+        "graph-option-" + key;
+
+    // Store the field name as the checkbox value.
+    checkbox.value = key;
+
+
+    // Create a label for the checkbox.
+    const label =
+        document.createElement("label");
+
+    // Connect the label to the checkbox.
+    label.htmlFor =
+        checkbox.id;
+
+    // Display the field name next to the checkbox.
+    label.textContent = key;
+
+    // Add spacing between the checkbox and its label.
+    label.style.marginLeft = "5px";
+
+    // Add spacing between this option and the next option.
+    label.style.marginRight = "15px";
+
+    // Make each label appear as an inline-block.
+    label.style.display = "inline-block";
+
+    // Give the label the same colour as its graph.
+    label.style.color =
+        getGraphColor(key);
+
+
+    // Add the checkbox to the graph options container.
+    graphOptions.appendChild(
+        checkbox
+    );
+
+    // Add the label immediately after the checkbox.
+    graphOptions.appendChild(
+        label
+    );
+
+    // When the checkbox changes, update the graphs.
+    checkbox.addEventListener(
+        "change",
+        function() {
+
+            // Create/remove graphs based on the selected options.
+            updateGraphs();
+
+            // Update the state of the "Toggle all" checkbox.
+            updateToggleAllState();
+
+        }
+    );
+
+    // Make the graph controls visible now that
+    // there is at least one graphable field.
+    graphControls.style.display =
+        "block";
+}
+
+
+// ========================================
+// Create graph
+// ========================================
+
+function createGraph(key) {
+
+    // If the graph already exists, do not create another one.
+    if (charts[key]) {
+        return;
+    }
+
+
+    // Create a wrapper div to hold the graph title and canvas.
+    const wrapper =
+        document.createElement("div");
+
+    // Make the graph use the full available width.
+    wrapper.style.width = "100%";
+
+    // Set the height of the graph.
+    wrapper.style.height = "300px";
+
+    // Add space underneath each graph.
+    wrapper.style.marginBottom = "30px";
+
+
+    // Create a heading for the graph.
+    const title =
+        document.createElement("h3");
+
+    // Use the field name as the graph title.
+    title.textContent = key;
+
+    // Give the title the same colour as the graph.
+    title.style.color =
+        getGraphColor(key);
+
+
+    // Create the canvas element that Chart.js will draw on.
+    const canvas =
+        document.createElement("canvas");
+
+
+    // Add the title to the wrapper.
+    wrapper.appendChild(title);
+
+    // Add the canvas to the wrapper.
+    wrapper.appendChild(canvas);
+
+    // Add the complete wrapper to the graphs container.
+    graphsContainer.appendChild(wrapper);
+
+
+    // Create labels using all currently stored timestamps.
+    const initialLabels =
+        records.map(
+            record =>
+                formatTime(
+                    record.timestamp
+                )
+        );
+
+
+    // Create graph values using the selected field.
+    const initialValues =
+        records.map(
+            record =>
+                getNumericValue(
+                    record[key]
+                )
+        );
+
+
+    // Create a new Chart.js line graph.
+    charts[key] =
+        new Chart(
+            canvas,
+            {
+                type: "line",
+
+                data: {
+
+                    // Use the timestamps as the x-axis labels.
+                    labels:
+                        initialLabels,
+
+                    // Create the graph dataset.
+                    datasets: [{
+
+                        // Name of the dataset.
+                        label: key,
+
+                        // Values displayed on the graph.
+                        data: initialValues,
+
+                        // Colour of the graph line.
+                        borderColor: getGraphColor(key),
+
+                        // Colour used for the graph background/points.
+                        backgroundColor: getGraphColor(key),
+
+                        // Thickness of the graph line.
+                        borderWidth: 2,
+
+                        // Show or hide points depending on the checkbox.
+                        pointRadius: pointsToggle.checked ? 2 : 0,
+
+                        // Size of the point when hovered over.
+                        pointHoverRadius: pointsToggle.checked ? 4 : 0,
+
+                        // Do not create an additional hit area.
+                        pointHitRadius: 0,
+
+                        // Keep the line straight instead of curved.
+                        tension: 0
+
+                    }]
+                },
+
+                options: {
+
+                    // Allow the graph to resize with the page.
+                    responsive: true,
+
+                    // Use the wrapper's height instead of
+                    // maintaining Chart.js' default aspect ratio.
+                    maintainAspectRatio: false,
+
+                    // Disable animations so live updates happen immediately.
+                    animation: false,
+
+                    // Disable hover animation.
+                    hover: {
+                        animationDuration: 0
+                    },
+
+                    plugins: {
+
+                        // Hide the Chart.js legend because
+                        // the graph already has a title.
+                        legend: {
+                            display: false
+                        }
+                    },
+
+                    elements: {
+
+                        // Keep the graph line straight.
+                        line: {
+                            tension: 0
+                        },
+                    },
+
+
+                    scales: {
+
+                        // Configure the x-axis.
+                        x: {
+
+                            // Give the x-axis a title.
+                            title: {
+                                display: true,
+                                text: "Time"
+                            }
+
+                        },
+
+                        // Configure the y-axis.
+                        y: {
+
+                            // Use the field name as the y-axis title.
+                            title: {
+                                display: true,
+                                text: key
+                            }
+
+                        }
+
+                    }
+
+                }
+            }
+        );
+
+    // Apply the current point visibility setting.
+    applyPointVisibility(charts[key]);
+}
+
+
+// ========================================
+// Remove graph
+// ========================================
+
+function removeGraph(key) {
+
+    // If the requested graph does not exist, there is
+    // nothing to remove.
+    if (!charts[key]) {
+        return;
+    }
+
+
+    // Destroy the Chart.js instance to free its resources.
+    charts[key].destroy();
+
+    // Remove the chart from the charts object.
+    delete charts[key];
+
+
+    // Search through the graph wrappers on the page.
+    for (
+        const graph of graphsContainer.children
+    ) {
+
+        // Find the title inside this graph wrapper.
+        const title =
+            graph.querySelector("h3");
+
+        // Check whether this is the graph we want to remove.
+        if (
+            title &&
+            title.textContent === key
+        ) {
+
+            // Remove the graph wrapper from the page.
+            graph.remove();
+
+            // Stop searching once the graph has been found.
+            break;
+        }
+    }
+}
+
+
+// ========================================
+// Toggle all graphs
+// ========================================
+
+function updateToggleAllState() {
+
+    // Find every graph-selection checkbox.
+    const checkboxes =
+        Array.from(
+            graphOptions.querySelectorAll(
+                "input[type='checkbox']"
+            )
+        );
+
+    // If there are no graph options yet,
+    // make sure "Toggle all" is unchecked.
+    if (checkboxes.length === 0) {
+        toggleAll.checked = false;
+        return;
+    }
+
+    // "Toggle all" is checked only if every graph checkbox
+    // is currently checked.
+    toggleAll.checked =
+        checkboxes.every(
+            checkbox => checkbox.checked
+        );
+}
+
+
+// ========================================
+// Update graphs
+// ========================================
+
+function updateGraphs() {
+
+    // Get the names of all currently selected graph fields.
+    const selectedFields =
+        Array.from(
+            graphOptions.querySelectorAll(
+                "input[type='checkbox']:checked"
+            )
+        ).map(
+            checkbox =>
+                checkbox.value
+        );
+
+
+    // ====================================
+    // Create selected graphs
+    // ====================================
+
+    // Make sure every selected field has a graph.
+    for (
+        const key of selectedFields
+    ) {
+
+        createGraph(key);
+
+    }
+
+
+    // ====================================
+    // Remove deselected graphs
+    // ====================================
+
+    // Check every graph that currently exists.
+    for (
+        const key of Object.keys(charts)
+    ) {
+
+        // If the graph is no longer selected,
+        // remove it from the page.
+        if (
+            !selectedFields.includes(key)
+        ) {
+
+            removeGraph(key);
+
+        }
+    }
+
+
+    // ====================================
+    // Last minute only
+    // ====================================
+
+    // Get the current time in milliseconds.
+    const now =
+        Date.now();
+
+    // Calculate the timestamp from one minute ago.
+    const oneMinuteAgo =
+        now - 60000;
+
+
+    // Keep only records from the last minute.
+    const recentRecords =
+        records.filter(
+            record => {
+
+                // Ignore records without a timestamp.
+                if (!record.timestamp) {
+                    return false;
+                }
+
+                // Convert the record timestamp into milliseconds.
+                const timestamp =
+                    new Date(
+                        record.timestamp
+                    ).getTime();
+
+                // Keep the record if its timestamp is valid
+                // and it is within the last minute.
+                return (
+                    Number.isFinite(timestamp) &&
+                    timestamp >= oneMinuteAgo
+                );
+
+            }
+        );
+
+
+    // ====================================
+    // Update each graph
+    // ====================================
+
+    // Update every graph that is currently selected.
+    for (
+        const key of selectedFields
+    ) {
+
+        // Get the Chart.js object for this field.
+        const chart =
+            charts[key];
+
+        // If the graph does not exist, skip it.
+        if (!chart) {
+            continue;
+        }
+
+        // Update the x-axis labels with the recent timestamps.
+        chart.data.labels =
+            recentRecords.map(
+                record =>
+                    formatTime(
+                        record.timestamp
+                    )
+            );
+
+
+        // Update the graph values with the recent data.
+        chart.data.datasets[0].data =
+            recentRecords.map(
+                record =>
+                    getNumericValue(
+                        record[key]
+                    )
+            );
+
+
+        // Update the graph without playing an animation.
+        chart.update("none");
+
+    }
+
+}
+
+
+// ========================================
+// Show points toggle
+// ========================================
+
+pointsToggle.addEventListener("change", function () {
+
+    // Store whether the checkbox is currently selected.
+    const showPoints = this.checked;
+
+    // Go through every graph currently displayed.
+    Object.keys(charts).forEach(key => {
+
+        // Get the existing Chart.js graph.
+        const oldChart = charts[key];
+
+        // If the graph no longer exists, skip it.
+        if (!oldChart) {
+            return;
+        }
+
+        // Save the current graph labels before destroying it.
+        const labels = [...oldChart.data.labels];
+
+        // Save the current graph values before destroying it.
+        const data = [...oldChart.data.datasets[0].data];
+
+        // Get the canvas used by the current graph.
+        const canvas = oldChart.canvas;
+
+        // Get the wrapper containing the canvas.
+        const wrapper = canvas.parentElement;
+
+        // Destroy the existing Chart.js instance.
+        oldChart.destroy();
+
+        // Recreate the chart using the same canvas.
+        charts[key] = new Chart(
+            canvas,
+            {
+                type: "line",
+
+                data: {
+                    // Restore the saved x-axis labels.
+                    labels: labels,
+
+                    datasets: [{
+                        // Restore the graph field name.
+                        label: key,
+
+                        // Restore the graph data.
+                        data: data,
+
+                        // Restore the graph colour.
+                        borderColor:
+                            getGraphColor(key),
+
+                        // Restore the background colour.
+                        backgroundColor:
+                            getGraphColor(key),
+
+                        // Set the line thickness.
+                        borderWidth: 2,
+
+                        // Keep the line straight.
+                        tension: 0,
+
+                        // Show or hide points based on the checkbox.
+                        pointRadius:
+                            showPoints ? 2 : 0,
+
+                        // Set the hover point size.
+                        pointHoverRadius:
+                            showPoints ? 4 : 0,
+
+                        // Disable the additional hit area.
+                        pointHitRadius: 0
+                    }]
+                },
+
+                options: {
+                    // Make the graph responsive.
+                    responsive: true,
+
+                    // Use the wrapper's height.
+                    maintainAspectRatio: false,
+
+                    // Disable normal graph animations.
+                    animation: false,
+
+                    // Disable animation when interacting with the graph.
+                    transitions: {
+                        active: {
+                            animation: {
+                                duration: 0
+                            }
+                        }
+                    },
+
+                    plugins: {
+                        // Hide the built-in legend.
+                        legend: {
+                            display: false
+                        }
+                    },
+
+                    elements: {
+                        // Keep the graph line straight.
+                        line: {
+                            tension: 0
+                        }
+                    },
+
+                    scales: {
+                        // Configure the x-axis.
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Time"
+                            }
+                        },
+
+                        // Configure the y-axis.
+                        y: {
+                            title: {
+                                display: true,
+                                text: key
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+    });
+
+});
+
+
+// ========================================
+// Show toggle all
+// ========================================
+
+toggleAll.addEventListener(
+    "change",
+    function() {
+
+        // Find all graph-selection checkboxes.
+        const checkboxes =
+            graphOptions.querySelectorAll(
+                "input[type='checkbox']"
+            );
+
+        // Set every graph checkbox to match
+        // the "Toggle all" checkbox.
+        checkboxes.forEach(
+            checkbox => {
+
+                checkbox.checked =
+                    this.checked;
+
+            }
+        );
+
+        // Create or remove graphs based on the new selections.
+        updateGraphs();
+
+    }
 );
 
 
-events.onmessage = function(event) {
+// ========================================
+// Connect to Flask SSE stream
+// ========================================
 
-    const data = JSON.parse(event.data);
-
-    const container = document.getElementById(
-        "vehicle-data"
+// Create an EventSource connection to the Flask endpoint.
+//
+// EventSource is used to receive Server-Sent Events (SSE)
+// from the server without repeatedly making normal requests.
+const events =
+    new EventSource(
+        "/live?stream=1"
     );
 
-    // Clear previous record
-    container.innerHTML = "";
+
+// ========================================
+// Receive live data
+// ========================================
+
+// This function runs whenever a new SSE message arrives.
+events.onmessage =
+    function(event) {
+
+        // Convert the JSON message received from Flask
+        // into a JavaScript object.
+        const data =
+            JSON.parse(
+                event.data
+            );
 
 
-    // Display every dictionary item
-    for (const [key, value] of Object.entries(data)) {
+        // =================================
+        // Display latest record
+        // =================================
 
-        const row = document.createElement("p");
-
-        row.textContent =
-            key + ": " + value;
-
-        container.appendChild(row);
-    }
-};
+        // Clear the previous vehicle data from the page.
+        vehicleData.innerHTML = "";
 
 
-events.onerror = function() {
+        // Loop through every key/value pair received.
+        for (
+            const [key, value]
+            of Object.entries(data)
+        ) {
 
-    console.log(
-        "Live connection closed."
-    );
+            // Create a new paragraph for this value.
+            const row =
+                document.createElement("p");
 
-    events.close();
-};
+            // If the message is a status message,
+            // display only the status value.
+            if (key === "status") {
+
+                row.textContent = value;
+
+            } else {
+
+                // Otherwise display the field name and value.
+                // Example: speed: 45
+                row.textContent =
+                    key + ": " + value;
+
+            }
+
+            // Add the new row to the vehicle data area.
+            vehicleData.appendChild(row);
+
+
+            // =================================
+            // Add numeric values to selector
+            // =================================
+
+            // Try to convert the value into a number.
+            const numericValue =
+                Number(value);
+
+
+            // Only numeric fields should be available
+            // as graph options.
+            //
+            // The "id" field is excluded because it is an
+            // identifier rather than a measurement.
+            if (
+                key !== "id" &&
+                value !== null &&
+                value !== "" &&
+                Number.isFinite(numericValue)
+            ) {
+
+                // Add a checkbox allowing this field
+                // to be graphed.
+                addGraphOption(key);
+
+            }
+
+        }
+
+
+        // =================================
+        // Ignore status messages
+        // =================================
+
+        // Status messages are displayed above but are not
+        // stored as graph records.
+        if (data.status) {
+            return;
+        }
+
+
+        // =================================
+        // Store record
+        // =================================
+
+        // Add the newly received vehicle record to the array.
+        records.push(data);
+
+
+        // Keep enough records in memory for the graphs.
+        //
+        // This prevents the array from growing forever.
+        if (records.length > 5000) {
+
+            // Remove the oldest record.
+            records.shift();
+
+        }
+
+
+        // =================================
+        // Update graphs
+        // =================================
+
+        // Refresh the selected graphs using the latest data.
+        updateGraphs();
+
+    };
+
+
+// ========================================
+// SSE connection error
+// ========================================
+
+// This function runs if the connection to Flask is interrupted.
+events.onerror =
+    function() {
+
+        // Log a message in the browser console.
+        //
+        // EventSource will normally attempt to reconnect automatically.
+        console.log(
+            "Live connection lost. Browser will retry..."
+        );
+
+    };
 
 </script>
 

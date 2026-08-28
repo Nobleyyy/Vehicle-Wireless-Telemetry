@@ -1,21 +1,140 @@
-{% extends "base.html" %}{% block title %}Login{% endblock %}
+<!--
+    Extend the main base.html template.
 
+    This allows the login page to reuse the common
+    layout, navigation, styling, etc. from base.html.
+-->
+{% extends "base.html" %}
+
+
+<!--
+    Set the title of the page.
+
+    This will be inserted into the title block
+    defined in base.html.
+-->
+{% block title %}Login{% endblock %}
+
+
+<!--
+    Start the main content section of the page.
+-->
 {% block content %}
 
+
+<!--
+    Display the page heading.
+
+    align="center" centres the heading on the page.
+-->
 <h3 align="center">Login</h3>
+
+
+<!--
+    Login form.
+
+    method="POST" means the email and password will
+    be sent to the Flask server using an HTTP POST request.
+-->
 <form method="POST">
+
+    <!-- Container for the email input -->
     <div class="form-group">
+
+        <!--
+            Label describing the email input.
+
+            The "for" attribute connects this label
+            to the input with id="email".
+        -->
         <label for="email">Email Address</label>
-        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email"/>
+
+
+        <!--
+            Email input field.
+
+            type="email":
+                Allows the browser to check that the
+                user has entered an email-style value.
+
+            class="form-control":
+                Applies the Bootstrap form styling.
+
+            id="email":
+                Gives the input a unique ID so the label
+                can be associated with it.
+
+            name="email":
+                This is the name Flask will use to retrieve
+                the submitted email value.
+
+            placeholder:
+                Displays helpful text before the user types.
+        -->
+        <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            placeholder="Enter email"
+        />
+
     </div>
 
+
+    <!-- Container for the password input -->
     <div class="form-group">
+
+        <!--
+            Label describing the password input.
+        -->
         <label for="password">Password</label>
-        <input type="password" class="form-control" id="password" name="password" placeholder="Enter password"/>
+
+
+        <!--
+            Password input field.
+
+            type="password":
+                Hides the characters entered by the user.
+
+            name="password":
+                Allows Flask to retrieve the password
+                from the submitted form.
+        -->
+        <input
+            type="password"
+            class="form-control"
+            id="password"
+            name="password"
+            placeholder="Enter password"
+        />
+
     </div>
 
+
+    <!-- Add some vertical spacing before the button -->
     <br />
 
-    <button type="submit" class="btn btn-primary">Login</button>
 
+    <!--
+        Submit button for the login form.
+
+        When clicked, the browser submits the form
+        to the current URL using the POST method.
+    -->
+    <button
+        type="submit"
+        class="btn btn-primary"
+    >
+        Login
+    </button>
+
+
+<!--
+    End of the content block.
+
+    Note: the original code does not explicitly contain
+    a closing </form> tag. Ideally, the form should be
+    closed before the content block ends.
+-->
 {% endblock %}

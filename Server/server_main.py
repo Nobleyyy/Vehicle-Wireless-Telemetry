@@ -54,6 +54,14 @@ def commands(web_server):
         elif command == "restart":
             print("Restarting server...")
             os.execv(sys.executable, [sys.executable] + sys.argv)
+        # List standard user account emails
+        elif command == "users":
+            list_users()
+        # Delete a user account
+        elif command.startswith("deleteuser "):
+            email = command[11:].strip()
+            if delete_user(email):
+                web_server = restart_web_server(web_server)
         # List of admin account emails
         elif command == "admins":
             list_admins()
@@ -94,6 +102,57 @@ def restart_web_server(web_server):
     print("Flask server restarted.")
 
     return web_server
+
+
+def list_users():
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
+
+    # Find all standard users (non-admins)
+    cursor.execute(
+        "SELECT email FROM user WHERE admin = 0"
+    )
+    users = cursor.fetchall()
+
+    connection.close()
+
+    print("Standard users:")
+    if not users:
+        print("No standard users found.")
+        return
+
+    for user in users:
+        print(f"- {user[0]}")
+
+
+def delete_user(email):
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
+
+    # Check email of user exists
+    cursor.execute(
+        "SELECT email FROM user WHERE email = ?",
+        (email,)
+    )
+    user = cursor.fetchone()
+
+    # User does not exist
+    if not user:
+        print(f"User not found: {email}")
+        connection.close()
+        return False
+
+    # Delete user
+    cursor.execute(
+        "DELETE FROM user WHERE email = ?",
+        (email,)
+    )
+
+    connection.commit()
+    connection.close()
+
+    print(f"{email} deleted.")
+    return True
 
 
 def list_admins():

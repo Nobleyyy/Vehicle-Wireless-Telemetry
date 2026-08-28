@@ -1,33 +1,214 @@
-{% extends "base.html" %}{% block title %}Sign Up{% endblock %}
+<!--
+    Extend the main base.html template.
 
+    This allows the sign-up page to use the common
+    layout and styling defined in base.html.
+-->
+{% extends "base.html" %}
+
+
+<!--
+    Set the page title to "Sign Up".
+
+    This is inserted into the title block
+    provided by base.html.
+-->
+{% block title %}Sign Up{% endblock %}
+
+
+<!--
+    Start the main content section.
+-->
 {% block content %}
 
+
+<!--
+    Display the Sign Up heading.
+
+    align="center" centres the heading on the page.
+-->
 <h3 align="center">Sign Up</h3>
+
+
+<!--
+    Start the sign-up form.
+
+    method="POST" means the user's information will be
+    sent to the Flask server using an HTTP POST request.
+-->
 <form method="POST">
+
+
+    <!-- ========================================
+         EMAIL
+         ======================================== -->
+
+    <!-- Container for the email input -->
     <div class="form-group">
+
+        <!--
+            Label describing the email input.
+
+            The "for" attribute connects the label
+            to the input with id="email".
+        -->
         <label for="email">Email Address</label>
-        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email"/>
+
+
+        <!--
+            Email input field.
+
+            type="email":
+                Allows the browser to perform basic
+                email format validation.
+
+            name="email":
+                This is the name Flask uses to retrieve
+                the submitted email address.
+
+            placeholder:
+                Displays instructions before the user
+                enters their email.
+        -->
+        <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            placeholder="Enter email"
+        />
+
     </div>
 
+
+    <!-- ========================================
+         FIRST NAME
+         ======================================== -->
+
+    <!-- Container for the first name input -->
     <div class="form-group">
+
+        <!-- Label describing the first name input -->
         <label for="firstName">First Name</label>
-        <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Enter first name"/>
+
+
+        <!--
+            First name input.
+
+            type="text":
+                Allows the user to enter normal text.
+
+            name="firstName":
+                This allows Flask to retrieve the
+                submitted first name.
+        -->
+        <input
+            type="text"
+            class="form-control"
+            id="firstName"
+            name="firstName"
+            placeholder="Enter first name"
+        />
+
     </div>
 
+
+    <!-- ========================================
+         PASSWORD
+         ======================================== -->
+
+    <!-- Container for the password input -->
     <div class="form-group">
+
+        <!-- Label describing the password input -->
         <label for="password1">Password</label>
-        <input type="password" class="form-control" id="password1" name="password1" placeholder="Enter password"/>
+
+
+        <!--
+            Password input field.
+
+            type="password":
+                Hides the characters entered by the user.
+
+            name="password1":
+                Flask uses this field to retrieve the
+                user's chosen password.
+        -->
+        <input
+            type="password"
+            class="form-control"
+            id="password1"
+            name="password1"
+            placeholder="Enter password"
+        />
+
     </div>
 
+
+    <!-- ========================================
+         CONFIRM PASSWORD
+         ======================================== -->
+
+    <!-- Container for the password confirmation input -->
     <div class="form-group">
+
+        <!--
+            Label telling the user to enter their
+            password a second time.
+        -->
         <label for="password2">Password (Confirm)</label>
-        <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm password"/>
+
+
+        <!--
+            Password confirmation field.
+
+            type="password":
+                Hides the characters entered.
+
+            name="password2":
+                Allows Flask to retrieve the second
+                password so it can be compared with
+                password1.
+        -->
+        <input
+            type="password"
+            class="form-control"
+            id="password2"
+            name="password2"
+            placeholder="Confirm password"
+        />
+
     </div>
 
+
+    <!--
+        Add some vertical spacing between the form
+        fields and the submit button.
+    -->
     <br />
 
-    <button type="submit" class="btn btn-primary">Submit</button>
 
+    <!--
+        Submit button.
+
+        When clicked, the browser submits all of the
+        form fields to the Flask server using POST.
+    -->
+    <button
+        type="submit"
+        class="btn btn-primary"
+    >
+        Submit
+    </button>
+
+
+<!--
+    Close the sign-up form.
+-->
 </form>
 
+
+<!--
+    End the main content block.
+-->
 {% endblock %}
