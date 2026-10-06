@@ -18,6 +18,7 @@ A Python-based wireless telemetry system for collecting vehicle data from the CA
 - Python Client (Vehicle)
 - Python Server
 - Flask Web Server
+- [Optional] It is recommended to setup a reverse proxy for the website.
 
 ## Status
 > 🚧 **Project Status:** The project is functional and under continuous development, with new features and improvements being added as ideas arise.
