@@ -6,6 +6,7 @@ from vehicle_constants import *
 # Package Imports
 import csv
 import json
+import os
 import socket
 import ssl
 import time
@@ -77,6 +78,10 @@ class Data_Client():
 
 ## Functions ##
 def read_csv(filename="ecu_signals.csv"):
+    filename = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        filename
+    )
     # Simulated data
     if not hasattr(read_csv, "reader"):
         read_csv.file = open(filename, "r", newline="")

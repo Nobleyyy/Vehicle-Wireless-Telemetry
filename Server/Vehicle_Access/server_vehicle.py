@@ -66,15 +66,28 @@ class Vehicle_Server:
 
         raw_conn, self.addr = self.connection.accept()
 
-        self.conn = self.ssl_context.wrap_socket(
-            raw_conn,
-            server_side=True
-        )
+        try:
+            self.conn = self.ssl_context.wrap_socket(
+                raw_conn,
+                server_side=True
+            )
+
+        except ssl.SSLError as error:
+            print(f"TLS connection failed from {self.addr}: {error}")
+            raw_conn.close()
+            return False
+
+        except (ConnectionError, OSError) as error:
+            print(f"Connection failed from {self.addr}: {error}")
+            raw_conn.close()
+            return False
 
         print(
             f"Secure vehicle connection established with "
             f"{self.addr}"
         )
+
+        return True
 
     def disconnect(self):
         """Close the active client connection and reset server state."""
@@ -97,7 +110,13 @@ class Vehicle_Server:
             try:
                 data = self.conn.recv(1024)
 
-            except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
+            except (
+                ConnectionResetError,
+                ConnectionAbortedError,
+                BrokenPipeError,
+                ssl.SSLError,
+                OSError
+            ):
                 return None
 
             if not data:
@@ -108,7 +127,11 @@ class Vehicle_Server:
         message, self.buffer = self.buffer.split(b"\n", 1)
         self.msg_id += 1
 
-        return json.loads(message.decode())
+        try:
+            return json.loads(message.decode())
+
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return None
 
     def date_to_string(self, timestamp_to_convert:float) -> list:
         """
@@ -157,39 +180,30 @@ current_table = None
 # Runtime Loop
 while True:
     # Wait for a vehicle to connect
-    comms.connect()
+    if not comms.connect():
+        continue
 
     # Main Loop
     while True:
-        # Recieve data from vehicle
         msg = comms.receive()
 
-        # Exits main loop when communication fails or ends
         if msg is None:
             break
 
-        # Convert recieved message to a dictionary
         database_package = {
             "id": msg[2],
             "timestamp": msg[1],
             **msg[0]
         }
 
-        # Print package for debugging
-        #comms.print_package(database_package)
-
-        # ID 1 means a new session has started
         if database_package["id"] == 1:
-
             current_table = db.create_session_table(
                 database_package
             )
 
-        # Insert the package into the current session table
         db.insert_record(
             database_package,
             current_table
         )
 
-    # Closes connection
     comms.disconnect()

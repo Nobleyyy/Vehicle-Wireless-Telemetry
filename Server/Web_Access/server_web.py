@@ -44,7 +44,9 @@ def run():
     web_port = int(web_port)
 
     app.run(
-        debug=True,
+        host=ip,
+        port=web_port,
+        debug=False,
         use_reloader=True,      # When file changes are made automatically reload the server
         threaded=True           # Multiple requests are handled in different threads
     )
