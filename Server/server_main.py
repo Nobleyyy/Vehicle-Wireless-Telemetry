@@ -57,6 +57,15 @@ def commands(web_server):
         elif command == "restart":
             print("Restarting server...")
             os.execv(sys.executable, [sys.executable] + sys.argv)
+        # Enable sign ups
+        elif command in ("signup on", "signup true"):
+            set_signup_status(True)
+        # Disable sign ups
+        elif command in ("signup off", "signup false"):
+            set_signup_status(False)
+        # Show sign up status
+        elif command == "signup status":
+            show_signup_status()
         # List standard user account emails
         elif command == "users":
             list_users()
@@ -101,8 +110,11 @@ Available commands:
   admin <email>                Give admin privileges
   unadmin <email>              Remove admin privileges
   deleteuser <email>           Delete a user
+  signup on                    Enable new account registration
+  signup off                   Disable new account registration
+  signup status                Show sign-up status
   sessions                     List vehicle sessions
-  deletesession <number>      Delete a session
+  deletesession <number>       Delete a session
   restart                      Restart the server
   quit / stop / end / die / kill
                                Stop the server
@@ -123,6 +135,55 @@ def restart_web_server(web_server):
     print("Flask server restarted.")
 
     return web_server
+
+
+def set_signup_status(enabled):
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
+    # Check users database.db exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        )
+    """)
+    # Alter signup setting
+    cursor.execute("""
+        INSERT INTO settings (key, value)
+        VALUES ('allow_signups', ?)
+        ON CONFLICT(key)
+        DO UPDATE SET value = excluded.value
+    """, ("1" if enabled else "0",))
+
+    connection.commit()
+    connection.close()
+
+    if enabled:
+        print("Sign-ups enabled.")
+    else:
+        print("Sign-ups disabled.")
+
+
+def show_signup_status():
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
+    # Check state of sign up setting in database.db
+    cursor.execute("""
+        SELECT value
+        FROM settings
+        WHERE key = 'allow_signups'
+    """)
+
+    result = cursor.fetchone()
+    connection.close()
+
+    # If no setting exists yet, sign-ups are enabled
+    enabled = result is None or result[0] == "1"
+
+    if enabled:
+        print("Sign-ups are enabled.")
+    else:
+        print("Sign-ups are disabled.")
 
 
 def list_users():

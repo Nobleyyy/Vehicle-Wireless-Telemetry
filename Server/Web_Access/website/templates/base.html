@@ -383,15 +383,17 @@
 
                         <!--
                             Display the Sign Up link for
-                            unauthenticated users.
+                            unauthenticated users if signups are active.
                         -->
-                        <a
-                            class="nav-item nav-link"
-                            id="signUp"
-                            href="/sign-up"
-                        >
-                            Sign Up
-                        </a>
+                        {% if signups_enabled %}
+                            <a
+                                class="nav-item nav-link"
+                                id="signUp"
+                                href="{{ url_for('auth.sign_up') }}"
+                            >
+                                Sign Up
+                            </a>
+                        {% endif %}
 
 
                     {% endif %}

@@ -4,6 +4,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
+from sqlalchemy import text
 
 # File Imports
 from .models import User
@@ -12,6 +13,20 @@ from . import db
 auth = Blueprint('auth', __name__)
 
 ## Functions ##
+def signups_enabled():
+    # Default to allow signups
+    result = db.session.execute(
+        text("""
+            SELECT value
+            FROM settings
+            WHERE key = 'allow_signups'
+        """)
+    ).scalar()
+
+    # Sign-ups are enabled if the setting doesn't exist yet
+    return result is None or result == "1"
+
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     # Process login form
@@ -45,9 +60,18 @@ def logout():
 
 @auth.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
+
+    # Do not allow access when sign-ups are disabled
+    if not signups_enabled():
+        flash(
+            'New account registration is currently disabled.',
+            category='error'
+        )
+        return redirect(url_for('auth.login'))
+
     # Process sign up form
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('email').strip().lower()
         first_name = request.form.get('firstName')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
