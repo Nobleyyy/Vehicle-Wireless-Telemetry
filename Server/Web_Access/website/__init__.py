@@ -31,6 +31,8 @@ def create_app():
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
 
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+
     @login_manager.user_loader
     def load_user(id):
         # Get user from database using their id

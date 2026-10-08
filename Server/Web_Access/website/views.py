@@ -24,14 +24,35 @@ def home():
 @views.route("/live")
 @login_required
 def live():
-    # Display live data page
-    if request.args.get("stream") != "1":
-        return render_template(
-            "live.html",
-            user=current_user
-        )
-    # Start live data stream thread
-    return l.live_stream()
+    # Keep /live?stream=1 as the SSE endpoint
+    if request.args.get("stream") == "1":
+        return l.live_stream()
+
+    # /live itself now goes to the dashboard
+    return render_template(
+        "live-dashboard.html",
+        user=current_user
+    )
+
+
+@views.route("/live-dashboard")
+@login_required
+def live_dashboard():
+    # Display live dashboard page
+    return render_template(
+        "live-dashboard.html",
+        user=current_user
+    )
+
+
+@views.route("/live-graph")
+@login_required
+def live_graph():
+    # Display live graph page
+    return render_template(
+        "live-graph.html",
+        user=current_user
+    )
 
 
 @views.route("/database")

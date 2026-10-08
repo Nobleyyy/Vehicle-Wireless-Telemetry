@@ -46,7 +46,6 @@
 
 
         <style>
-
             /* ========================================
                DEFAULT / LIGHT THEME
                ======================================== */
@@ -221,6 +220,53 @@
 
             }
 
+
+            /* ========================================
+            LIVE SECONDARY NAVIGATION
+            ======================================== */
+
+            .live-subnav {
+                background-color: #5a6268;
+                border-top: 1px solid rgba(255, 255, 255, 0.15);
+            }
+
+            .live-subnav .nav-link {
+                color: rgba(255, 255, 255, 0.85);
+                padding: 8px 15px;
+            }
+
+            .live-subnav .nav-link:hover {
+                color: #fff;
+            }
+
+            .live-subnav .nav-link.active {
+                color: #fff;
+                font-weight: 600;
+                background-color: rgba(255, 255, 255, 0.12);
+            }
+
+
+            /* ========================================
+            SUB NAV BAR DARK THEME
+            ======================================== */
+
+            html[data-theme="dark"] .live-subnav {
+                background-color: #343a40;
+            }
+
+
+            /* ========================================
+            SUB NAV BAR SYSTEM DARK MODE
+            ======================================== */
+
+            @media (prefers-color-scheme: dark) {
+
+                html:not([data-theme="light"]) .live-subnav {
+                    background-color: #343a40;
+                }
+
+            }
+
         </style>
 
 
@@ -269,16 +315,7 @@
         -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-
-            <!-- ========================================
-                 HAMBURGER BUTTON
-                 ======================================== -->
-
-            <!--
-                This button appears on smaller screens.
-
-                Clicking it opens and closes the navigation links.
-            -->
+            <!-- 1. Hamburger Button -->
             <button
                 class="navbar-toggler"
                 type="button"
@@ -288,145 +325,63 @@
                 aria-expanded="false"
                 aria-label="Toggle navigation"
             >
-
-                <!-- Bootstrap hamburger menu icon -->
                 <span class="navbar-toggler-icon"></span>
-
             </button>
 
-
-            <!-- ========================================
-                 NAVIGATION LINKS
-                 ======================================== -->
-
-            <!--
-                This div contains the navigation links.
-
-                Bootstrap collapses this section on smaller screens.
-            -->
-            <div
-                class="collapse navbar-collapse"
-                id="navbar"
-            >
-
-                <div class="navbar-nav">
-
-
-                    <!--
-                        Check whether the current user is logged in.
-
-                        user.is_authenticated is provided by Flask-Login.
-                    -->
+            <!-- 2. Collapsible Menu Container -->
+            <div class="collapse navbar-collapse" id="navbar">
+                <div class="navbar-nav mr-auto">
                     {% if user.is_authenticated %}
-
-
-                        <!-- Link to the home page -->
-                        <a
-                            class="nav-item nav-link"
-                            id="home"
-                            href="/"
-                        >
-                            Home
-                        </a>
-
-
-                        <!-- Link to the live data page -->
-                        <a
-                            class="nav-item nav-link"
-                            id="live"
-                            href="/live"
-                        >
-                            Live
-                        </a>
-
-
-                        <!-- Link to the database page -->
-                        <a
-                            class="nav-item nav-link"
-                            id="database"
-                            href="/database"
-                        >
-                            Database
-                        </a>
-
-
-                        <!--
-                            Log the user out.
-
-                            The Flask /logout route handles the
-                            logout process.
-                        -->
-                        <a
-                            class="nav-item nav-link"
-                            id="logout"
-                            href="/logout"
-                        >
-                            Logout
-                        </a>
-
-
+                        <a class="nav-link" href="/">Home</a>
+                        <a class="nav-link d-none d-lg-block" href="/live-dashboard">Live</a>
+                        <a class="nav-link d-lg-none" href="/live-dashboard">Live Dashboard</a>
+                        <a class="nav-link d-lg-none" href="/live-graph">Live Graph</a>
+                        <a class="nav-link" href="/database">Database</a>
+                        <a class="nav-link" href="/logout">Logout</a>
                     {% else %}
-
-
-                        <!--
-                            If the user is not logged in,
-                            display the Login link.
-                        -->
-                        <a
-                            class="nav-item nav-link"
-                            id="login"
-                            href="/login"
-                        >
-                            Login
-                        </a>
-
-
-                        <!--
-                            Display the Sign Up link for
-                            unauthenticated users if signups are active.
-                        -->
+                        <a class="nav-link" href="/login">Login</a>
                         {% if signups_enabled %}
-                            <a
-                                class="nav-item nav-link"
-                                id="signUp"
-                                href="{{ url_for('auth.sign_up') }}"
-                            >
-                                Sign Up
-                            </a>
+                            <a class="nav-link" href="{{ url_for('auth.sign_up') }}">Sign Up</a>
                         {% endif %}
-
-
                     {% endif %}
-
                 </div>
-
             </div>
 
-
-            <!-- ========================================
-                 THEME BUTTON
-                 ======================================== -->
-
-            <!--
-                Theme selection button.
-
-                JavaScript changes the text between:
-
-                    System
-                    Light
-                    Dark
-
-                The button is always visible, including
-                on smaller screens.
-            -->
+            <!-- 3. Theme Button (Pushed to the far right) -->
             <button
                 id="themeToggle"
                 class="btn btn-outline-light btn-sm ml-auto"
             >
-                System
+                Dark
             </button>
 
         </nav>
+
+        {% if user.is_authenticated and request.path in ['/live-dashboard', '/live-graph'] %}
+        <div class="live-subnav d-none d-lg-block">
+            <div class="container">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a
+                            class="nav-link {% if request.path == '/live-dashboard' %}active{% endif %}"
+                            href="/live-dashboard"
+                        >
+                            Dashboard
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a
+                            class="nav-link {% if request.path == '/live-graph' %}active{% endif %}"
+                            href="/live-graph"
+                        >
+                            Graphs
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
 
 
         <!-- ========================================
@@ -751,7 +706,6 @@
             applyTheme(currentTheme);
 
         </script>
-
 
     </body>
 
