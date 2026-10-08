@@ -3,8 +3,460 @@
 {% block title %}Live Dashboard{% endblock %}
 
 {% block content %}
-<!-- Main heading shown at the top of the live dashboard data page -->
-<h1>Live Dashboard Data Page</h1>
+<style>
+    /* Dashboard Dark Theme Container */
+    .f1-dashboard {
+        background-color: #2c2f33;
+        color: #ffffff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
 
+    .dash-header {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
 
+    /* Status Connection Warning */
+    #status-banner {
+        background-color: #dc3545;
+        color: white;
+        text-align: center;
+        padding: 10px;
+        font-weight: bold;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        display: none;
+    }
+
+    /* Medium/Large Screen Layout (Your Preferred Look) */
+    .desktop-layout {
+        display: block;
+    }
+
+    /* Small Screen Layout (Hidden on desktop, shown on mobile) */
+    .mobile-layout {
+        display: none;
+    }
+
+    .top-gauges {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .gauge-box {
+        background: #23272a;
+        border: 2px solid #4f545c;
+        border-radius: 50%;
+        width: 180px;
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        flex-shrink: 0;
+    }
+
+    .gauge-title {
+        font-size: 14px;
+        color: #b9bbbe;
+        letter-spacing: 1px;
+    }
+
+    .gauge-value {
+        font-size: 36px;
+        font-weight: bold;
+        color: #ffffff;
+        margin-top: 5px;
+    }
+
+    /* Central Pedals / Bars */
+    .center-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        min-width: 200px;
+        flex-shrink: 0;
+    }
+
+    .bar-container {
+        width: 100%;
+        background: #1e2124;
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid #4f545c;
+        height: 22px;
+        position: relative;
+    }
+
+    .bar-fill {
+        height: 100%;
+        width: 0%;
+        transition: width 0.1s ease;
+    }
+
+    #throttle-fill, #m-throttle-fill { background-color: #28a745; }
+    #brake-fill, #m-brake-fill { background-color: #dc3545; }
+
+    .bar-label {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        font-size: 11px;
+        font-weight: bold;
+        line-height: 22px;
+        color: #fff;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+    /* Bottom Panel (Safety, Stats, Tyres) */
+    .bottom-panel {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        background: #23272a;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #4f545c;
+    }
+
+    .section-block h3 {
+        text-align: center;
+        font-size: 16px;
+        color: #b9bbbe;
+        border-bottom: 1px solid #4f545c;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+    }
+
+    /* Safety Indicators / LEDs */
+    .led-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        text-align: center;
+    }
+
+    .led-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 11px;
+        color: #b9bbbe;
+    }
+
+    .led-circle {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background-color: #4f545c;
+        border: 2px solid #2c2f33;
+        box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        margin-bottom: 5px;
+        transition: background-color 0.2s, box-shadow 0.2s;
+    }
+
+    .led-circle.active {
+        background-color: #28a745;
+        box-shadow: 0 0 10px #28a745;
+    }
+
+    /* Tyres Layout */
+    .tyres-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        height: 150px;
+    }
+
+    .tyre-val {
+        position: absolute;
+        font-weight: bold;
+        font-size: 14px;
+        background: #1e2124;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #4f545c;
+    }
+
+    #tyre-fl, #m-tyre-fl { top: 10px; left: 15px; color: #dc3545; }
+    #tyre-fr, #m-tyre-fr { top: 10px; right: 15px; color: #dc3545; }
+    #tyre-rl, #m-tyre-rl { bottom: 10px; left: 15px; color: #dc3545; }
+    #tyre-rr, #m-tyre-rr { bottom: 10px; right: 15px; color: #dc3545; }
+
+    /* Switch to mobile layout and stack bottom panel on small screens */
+    @media (max-width: 768px) {
+        .desktop-layout { display: none; }
+        .mobile-layout { display: block; }
+        .bottom-panel {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+    }
+</style>
+
+<div class="f1-dashboard">
+    <div class="dash-header">LIVE DASHBOARD DATA</div>
+
+    <div id="status-banner">Waiting for data...</div>
+
+    <!-- ========================================== -->
+    <!-- DESKTOP / MEDIUM LOOK (Your Preferred Layout) -->
+    <!-- ========================================== -->
+    <div class="desktop-layout">
+        <div class="top-gauges">
+            <div class="gauge-box">
+                <div class="gauge-title">SPEED</div>
+                <div class="gauge-value" id="val-speed">N/A</div>
+            </div>
+
+            <div class="center-panel">
+                <div class="gauge-box" style="width: 150px; height: 150px;">
+                    <div class="gauge-title">RPM</div>
+                    <div class="gauge-value" id="val-rpm" style="font-size: 26px;">N/A</div>
+                </div>
+                
+                <div style="width: 100%;">
+                    <div class="bar-container">
+                        <div class="bar-label">THROTTLE</div>
+                        <div class="bar-fill" id="throttle-fill"></div>
+                    </div>
+                    <div class="bar-container" style="margin-top: 5px;">
+                        <div class="bar-label">BRAKE</div>
+                        <div class="bar-fill" id="brake-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">GEAR</div>
+                <div class="gauge-value" id="val-gear">N/A</div>
+            </div>
+        </div>
+
+        <div class="top-gauges" style="margin-bottom: 30px;">
+            <div class="gauge-box" style="width: 150px; height: 150px;">
+                <div class="gauge-title">FUEL P</div>
+                <div class="gauge-value" id="val-fuelp" style="font-size: 26px;">N/A</div>
+            </div>
+            <div class="gauge-box" style="width: 150px; height: 150px;">
+                <div class="gauge-title">OIL P</div>
+                <div class="gauge-value" id="val-oilp" style="font-size: 26px;">N/A</div>
+            </div>
+            <div class="gauge-box" style="width: 150px; height: 150px;">
+                <div class="gauge-title">ENG TEMP</div>
+                <div class="gauge-value" id="val-engtemp" style="font-size: 24px;">N/A</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SMALL / MOBILE LOOK (Clean Grid Layout)    -->
+    <!-- ========================================== -->
+    <div class="mobile-layout">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; justify-items: center; align-items: center; margin-bottom: 30px;">
+            <div class="gauge-box" style="width: 150px; height: 150px;">
+                <div class="gauge-title">SPEED</div>
+                <div class="gauge-value" id="m-val-speed" style="font-size: 28px;">N/A</div>
+            </div>
+
+            <div class="gauge-box" style="width: 150px; height: 150px;">
+                <div class="gauge-title">RPM</div>
+                <div class="gauge-value" id="m-val-rpm" style="font-size: 24px;">N/A</div>
+            </div>
+
+            <div style="background: #23272a; border: 2px solid #4f545c; border-radius: 12px; width: 150px; height: 150px; display: flex; flex-direction: column; justify-content: center; padding: 12px; box-sizing: border-box; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                <div class="bar-container" style="margin-top: 0;">
+                    <div class="bar-label">THROTTLE</div>
+                    <div class="bar-fill" id="m-throttle-fill"></div>
+                </div>
+                <div class="bar-container" style="margin-top: 8px;">
+                    <div class="bar-label">BRAKE</div>
+                    <div class="bar-fill" id="m-brake-fill"></div>
+                </div>
+            </div>
+
+            <div class="gauge-box" style="width: 150px; height: 150px;">
+                <div class="gauge-title">GEAR</div>
+                <div class="gauge-value" id="m-val-gear" style="font-size: 28px;">N/A</div>
+            </div>
+
+            <div class="gauge-box" style="width: 150px; height: 150px;">
+                <div class="gauge-title">FUEL P</div>
+                <div class="gauge-value" id="m-val-fuelp" style="font-size: 24px;">N/A</div>
+            </div>
+
+            <div class="gauge-box" style="width: 150px; height: 150px;">
+                <div class="gauge-title">OIL P</div>
+                <div class="gauge-value" id="m-val-oilp" style="font-size: 24px;">N/A</div>
+            </div>
+
+            <div class="gauge-box" style="width: 150px; height: 150px; grid-column: span 2; justify-self: center;">
+                <div class="gauge-title">ENG TEMP</div>
+                <div class="gauge-value" id="m-val-engtemp" style="font-size: 24px;">N/A</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Row: Safety, Stats, Tyres (Shared) -->
+    <div class="bottom-panel">
+        <div class="section-block">
+            <h3>SAFETY</h3>
+            <div class="led-grid">
+                <div class="led-item"><div class="led-circle" id-led="bspd"></div>BSPD</div>
+                <div class="led-item"><div class="led-circle" id-led="bots"></div>BOTS</div>
+                <div class="led-item"><div class="led-circle" id-led="inertia"></div>Inertia</div>
+                <div class="led-item"><div class="led-circle" id-led="left"></div>Left</div>
+                <div class="led-item"><div class="led-circle" id-led="cockpit"></div>Cockpit</div>
+                <div class="led-item"><div class="led-circle" id-led="right"></div>Right</div>
+            </div>
+        </div>
+
+        <div class="section-block">
+            <h3>STATS</h3>
+            <div style="display: flex; justify-content: space-around; align-items: center; height: 100px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; color: #dc3545;">🔋</div>
+                    <div id="val-voltage" style="font-size: 14px; margin-top: 5px;">N/A</div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="led-circle" id="pump-led" style="margin: 0 auto 5px auto;"></div>
+                    <div style="font-size: 11px; color: #b9bbbe;">FUEL PUMP</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-block">
+            <h3>Tyres (°C)</h3>
+            <div class="tyres-container">
+                <div style="color: #6c757d; font-size: 12px; text-align: center; border: 1px dashed #4f545c; width: 50px; height: 100px; display: flex; align-items: center; justify-content: center;">CAR</div>
+                <div class="tyre-val" id="tyre-fl">FL: N/A</div>
+                <div class="tyre-val" id="tyre-fr">FR: N/A</div>
+                <div class="tyre-val" id="tyre-rl">RL: N/A</div>
+                <div class="tyre-val" id="tyre-rr">RR: N/A</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const events = new EventSource("/live?stream=1");
+    const statusBanner = document.getElementById("status-banner");
+
+    events.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+        if (data.status) {
+            statusBanner.style.display = "block";
+            statusBanner.textContent = data.status;
+            return;
+        } else {
+            statusBanner.style.display = "none";
+        }
+
+        function findValue(obj, targetKey) {
+            const lowerTarget = targetKey.toLowerCase();
+            for (let key of Object.keys(obj)) {
+                if (key.toLowerCase() === lowerTarget || key.toLowerCase().replace(/[_]/g, "") === lowerTarget.replace(/[_]/g, "")) {
+                    return obj[key];
+                }
+            }
+            return undefined;
+        }
+
+        // Helper that updates both desktop and mobile element IDs simultaneously
+        function updateFieldPair(baseId, targetKey, unit = "", prefix = "") {
+            const val = findValue(data, targetKey);
+            const displayVal = (val !== undefined && val !== null && val !== "") ? (prefix + val + unit) : (prefix + "N/A");
+            
+            const desktopEl = document.getElementById(baseId);
+            const mobileEl = document.getElementById("m-" + baseId);
+            
+            if (desktopEl) desktopEl.textContent = displayVal;
+            if (mobileEl) mobileEl.textContent = displayVal;
+        }
+
+        updateFieldPair("val-speed", "VehicleSpeed");
+        updateFieldPair("val-rpm", "EngineRPM");
+        updateFieldPair("val-engtemp", "EngineTemp", "°C");
+        updateFieldPair("val-gear", "gear");
+        updateFieldPair("val-fuelp", "fuelp");
+        updateFieldPair("val-oilp", "oilp");
+        updateFieldPair("val-voltage", "voltage", " V");
+
+        // Throttle & Brake update for both layouts
+        const tValRaw = findValue(data, "ThrottlePos");
+        let tPercent = 0;
+        if (tValRaw !== undefined && tValRaw !== null) {
+            let tVal = Number(tValRaw);
+            if (tVal <= 1) tVal = tVal * 100;
+            tPercent = Math.min(Math.max(tVal, 0), 100) + "%";
+        }
+        document.getElementById("throttle-fill").style.width = tPercent;
+        const mThrottle = document.getElementById("m-throttle-fill");
+        if (mThrottle) mThrottle.style.width = tPercent;
+
+        const bValRaw = findValue(data, "BrakePos");
+        let bPercent = 0;
+        if (bValRaw !== undefined && bValRaw !== null) {
+            let bVal = Number(bValRaw);
+            if (bVal <= 1) bVal = bVal * 100;
+            bPercent = Math.min(Math.max(bVal, 0), 100) + "%";
+        }
+        document.getElementById("brake-fill").style.width = bPercent;
+        const mBrake = document.getElementById("m-brake-fill");
+        if (mBrake) mBrake.style.width = bPercent;
+
+        // Tyres
+        updateFieldPair("tyre-fl", "tyre_fl", "°C", "FL: ");
+        updateFieldPair("tyre-fr", "tyre_fr", "°C", "FR: ");
+        updateFieldPair("tyre-rl", "tyre_rl", "°C", "RL: ");
+        updateFieldPair("tyre-rr", "tyre_rr", "°C", "RR: ");
+
+        // LEDs/Safety flags
+        const leds = ["bspd", "bots", "inertia", "left", "cockpit", "right"];
+        leds.forEach(led => {
+            const el = document.querySelector(`[id-led="${led}"]`);
+            if (el) {
+                const val = findValue(data, led);
+                if (val) {
+                    el.classList.add("active");
+                } else {
+                    el.classList.remove("active");
+                }
+            }
+        });
+
+        const pumpVal = findValue(data, "fuel_pump") ?? findValue(data, "fuelpump");
+        const pumpEl = document.getElementById("pump-led");
+        if (pumpEl && pumpVal !== undefined) {
+            if (pumpVal) {
+                pumpEl.classList.add("active");
+            } else {
+                pumpEl.classList.remove("active");
+            }
+        }
+    };
+
+    events.onerror = function() {
+        statusBanner.style.display = "block";
+        statusBanner.textContent = "Live connection lost. Reconnecting...";
+    };
+</script>
 {% endblock %}

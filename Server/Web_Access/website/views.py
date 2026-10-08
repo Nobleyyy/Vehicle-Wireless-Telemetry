@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, jsonify, Response
 from flask_login import login_required, current_user
 
 # File Imports
-from .page_py import live_graph as lg
+from .page_py import live as l
 from .page_py import database as d
 
 views = Blueprint("views", __name__)
@@ -26,7 +26,7 @@ def home():
 def live():
     # Keep /live?stream=1 as the SSE endpoint
     if request.args.get("stream") == "1":
-        return lg.live_stream()
+        return l.live_stream()
 
     # /live itself now goes to the dashboard
     return render_template(
