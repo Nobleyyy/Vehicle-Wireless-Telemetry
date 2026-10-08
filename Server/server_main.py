@@ -17,32 +17,40 @@ CAR_DATABASE = os.path.join(BASE_DIR, "Data_Archive", "car_data.db")
 
 ## Functions ##
 def main():
-    # Start vehicle connection server
-    vehicle_server = subprocess.Popen(
-        [sys.executable, "server_vehicle.py"],
-        cwd=VEHICLE_DIR
-    )
+    while True:
+        # Start vehicle connection server
+        vehicle_server = subprocess.Popen(
+            [sys.executable, "server_vehicle.py"],
+            cwd=VEHICLE_DIR
+        )
 
-    # Start Flask web server
-    web_server = subprocess.Popen(
-        [sys.executable, "server_web.py"],
-        cwd=WEB_DIR
-    )
-    print("Servers started.")
+        # Start Flask web server
+        web_server = subprocess.Popen(
+            [sys.executable, "server_web.py"],
+            cwd=WEB_DIR
+        )
 
-    try:
-        # Collect commandline commands
-        commands(web_server)
-    finally:
-        # Shutdown server
-        print("Stopping servers...")
-        vehicle_server.terminate()
-        web_server.terminate()
+        print("Servers started.")
 
-        vehicle_server.wait()
-        web_server.wait()
-        print("Servers stopped.")
+        try:
+            result = commands(web_server)
 
+        finally:
+            print("Stopping servers...")
+
+            vehicle_server.terminate()
+            web_server.terminate()
+
+            vehicle_server.wait()
+            web_server.wait()
+
+            print("Servers stopped.")
+
+        if result == "restart":
+            print("Restarting servers...")
+            continue
+
+        break
 
 def commands(web_server):
     while True:
@@ -52,11 +60,11 @@ def commands(web_server):
             show_help()
         # Shutdown Server
         elif command in ("quit", "stop", "end", "die", "kill"):
-            return
+            return "quit"
         # Restart Server
         elif command == "restart":
             print("Restarting server...")
-            os.execv(sys.executable, [sys.executable] + sys.argv)
+            return "restart"
         # Enable sign ups
         elif command in ("signup on", "signup true"):
             set_signup_status(True)
