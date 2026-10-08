@@ -1,5 +1,5 @@
 # Vehicle Wireless Telemetry
-A Python-based wireless telemetry system for collecting vehicle data from the CAN bus transmitting it to an external Python server.
+A Python-based wireless telemetry system for collecting vehicle data from the CAN bus transmitting it to an external Python server. Users will be able to view collected data through a globally accessible website.
 
 ## Features
 - 📡 **Wireless Telemetry** – Transmit encrypted vehicle data securely to a remote server in real time.
