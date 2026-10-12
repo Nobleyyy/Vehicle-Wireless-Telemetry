@@ -60,15 +60,16 @@ def check_openssl():
 
 
 def get_server_address():
-    """Get the server hostname for the TLS certificate."""
+    """Get the server address/hostname for the TLS certificate from lan_server_ip."""
 
     config = load_config()
 
-    hostname = config.get("server_hostname") or "localhost"
+    # Read lan_server_ip from config, falling back to localhost if missing
+    hostname = config.get("lan_server_ip") or "localhost"
     hostname = hostname.strip()
 
     if " " in hostname:
-        print("ERROR: Invalid hostname.")
+        print("ERROR: Invalid LAN server IP / hostname.")
         sys.exit(1)
 
     if hostname.lower() == "localhost":
@@ -78,7 +79,7 @@ def get_server_address():
             "common_name": "localhost"
         }
 
-    # If someone enters an IP as the hostname, put it in the IP SAN.
+    # If someone enters an IP as the lan_server_ip, put it in the IP SAN.
     try:
         ipaddress.ip_address(hostname)
 
