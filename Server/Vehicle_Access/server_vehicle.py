@@ -164,7 +164,7 @@ def load_config():
 # Run config
 config = load_config()
 
-SERVER_IP = config.get("server_hostname") or config.get("server_ip") or DEFAULT_SERVER_IP
+SERVER_IP = config.get("actual_server_ip") or config.get("server_ip") or DEFAULT_SERVER_IP
 
 if SERVER_IP.lower() == "localhost":
     SERVER_IP = "127.0.0.1"
