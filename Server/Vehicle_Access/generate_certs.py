@@ -60,43 +60,43 @@ def check_openssl():
 
 
 def get_server_address():
-    """Get the server address/hostname for the TLS certificate from lan_server_ip."""
+    """Get the server address/hostname for the TLS certificate strictly from server_hostname."""
 
     config = load_config()
 
-    # Read lan_server_ip from config, falling back to localhost if missing
-    hostname = config.get("lan_server_ip") or "localhost"
+    # Read server_hostname from config, falling back to localhost if missing
+    hostname = config.get("server_hostname") or "localhost"
     hostname = hostname.strip()
 
     if " " in hostname:
-        print("ERROR: Invalid LAN server IP / hostname.")
+        print("ERROR: Invalid server hostname.")
         sys.exit(1)
 
+    dns_list = []
+    ip_list = []
+
     if hostname.lower() == "localhost":
-        return {
-            "dns": ["localhost"],
-            "ip": ["127.0.0.1"],
-            "common_name": "localhost"
-        }
+        dns_list.append("localhost")
+        ip_list.append("127.0.0.1")
+    else:
+        # Check if someone put an IP directly into server_hostname, otherwise treat as DNS domain
+        try:
+            ipaddress.ip_address(hostname)
+            ip_list.append(hostname)
+        except ValueError:
+            dns_list.append(hostname)
+            # Also ensure localhost works locally
+            if "localhost" not in dns_list:
+                dns_list.append("localhost")
+            if "127.0.0.1" not in ip_list:
+                ip_list.append("127.0.0.1")
 
-    # If someone enters an IP as the lan_server_ip, put it in the IP SAN.
-    try:
-        ipaddress.ip_address(hostname)
+    common_name = dns_list[0] if dns_list else ip_list[0]
 
-        return {
-            "dns": [],
-            "ip": [hostname],
-            "common_name": hostname
-        }
-
-    except ValueError:
-        pass
-
-    # Otherwise treat it as a DNS hostname.
     return {
-        "dns": [hostname],
-        "ip": [],
-        "common_name": hostname
+        "dns": dns_list,
+        "ip": ip_list,
+        "common_name": common_name
     }
 
 
