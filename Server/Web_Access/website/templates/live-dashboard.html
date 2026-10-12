@@ -169,9 +169,11 @@
         transition: background-color 0.2s, box-shadow 0.2s;
     }
 
-    .led-circle.active {
-        background-color: #28a745;
-        box-shadow: 0 0 10px #28a745;
+    /* Universal Active State Override for all LEDs including FuelPump */
+    .led-circle.active,
+    #FuelPump.active {
+        background-color: #28a745 !important;
+        box-shadow: 0 0 10px #28a745 !important;
     }
 
     /* Tyres Layout */
@@ -428,7 +430,7 @@
 
             <div class="gauge-box" style="width: 150px; height: 150px;">
                 <div class="gauge-title">FUEL P</div>
-                <div class="gauge-value" id="m-val-fuelp" style="font-size: 24px;">N/A</div>
+                <div class="gauge-value" id="val-fuelp" style="font-size: 24px;">N/A</div>
             </div>
 
             <div class="gauge-box" style="width: 150px; height: 150px;">
@@ -465,7 +467,7 @@
                     <div id="val-voltage" style="font-size: 14px; margin-top: 5px;">N/A</div>
                 </div>
                 <div style="text-align: center;">
-                    <div class="led-circle" id="pump-led" style="margin: 0 auto 5px auto;"></div>
+                    <div class="led-circle" id="FuelPump" style="margin: 0 auto 5px auto;"></div>
                     <div style="font-size: 11px; color: inherit;">FUEL PUMP</div>
                 </div>
             </div>
@@ -499,19 +501,39 @@
             statusBanner.style.display = "none";
         }
 
-        function findValue(obj, targetKey) {
-            const lowerTarget = targetKey.toLowerCase();
-            for (let key of Object.keys(obj)) {
-                if (key.toLowerCase() === lowerTarget || key.toLowerCase().replace(/[_]/g, "") === lowerTarget.replace(/[_]/g, "")) {
-                    return obj[key];
+        function findValue(obj, targetKeys) {
+            if (!Array.isArray(targetKeys)) targetKeys = [targetKeys];
+            for (let targetKey of targetKeys) {
+                const lowerTarget = targetKey.toLowerCase();
+                for (let key of Object.keys(obj)) {
+                    if (key.toLowerCase() === lowerTarget || 
+                        key.toLowerCase().replace(/[_]/g, "") === lowerTarget.replace(/[_]/g, "")) {
+                        return obj[key];
+                    }
+                }
+            }
+            for (let targetKey of targetKeys) {
+                const lowerTarget = targetKey.toLowerCase();
+                for (let key of Object.keys(obj)) {
+                    if (key.toLowerCase().includes(lowerTarget) || lowerTarget.includes(key.toLowerCase())) {
+                        return obj[key];
+                    }
                 }
             }
             return undefined;
         }
 
-        function updateFieldPair(baseId, targetKey, unit = "", prefix = "") {
-            const val = findValue(data, targetKey);
-            const displayVal = (val !== undefined && val !== null && val !== "") ? (prefix + val + unit) : (prefix + "N/A");
+        function formatNumber(val) {
+            if (val === undefined || val === null || val === "") return "N/A";
+            const num = Number(val);
+            if (isNaN(num)) return val;
+            return Number.isInteger(num) ? num : num.toFixed(2);
+        }
+
+        function updateFieldPair(baseId, targetKeys, unit = "", prefix = "") {
+            const val = findValue(data, targetKeys);
+            const formatted = formatNumber(val);
+            const displayVal = (formatted !== "N/A") ? (prefix + formatted + unit) : (prefix + "N/A");
             
             const desktopEl = document.getElementById(baseId);
             const mobileEl = document.getElementById("m-" + baseId);
@@ -520,46 +542,57 @@
             if (mobileEl) mobileEl.textContent = displayVal;
         }
 
-        updateFieldPair("val-speed", "VehicleSpeed");
-        updateFieldPair("val-rpm", "EngineRPM");
-        updateFieldPair("val-engtemp", "EngineTemp", "°C");
-        updateFieldPair("val-gear", "gear");
-        updateFieldPair("val-fuelp", "fuelp");
-        updateFieldPair("val-oilp", "oilp");
-        updateFieldPair("val-voltage", "voltage", " V");
+        updateFieldPair("val-speed", ["VehicleSpeed", "vehiclespeed", "speed"]);
+        updateFieldPair("val-rpm", ["EngineRPM", "enginerpm", "rpm"]);
+        updateFieldPair("val-engtemp", ["EngineTemp", "enginetemp", "eng_temp"], "°C");
+        updateFieldPair("val-voltage", ["BatteryVoltage", "batteryvoltage", "voltage"], " V");
+        updateFieldPair("val-fuelp", ["FuelPressure", "fuel_pressure", "fuelp"]);
+        updateFieldPair("val-oilp", ["OilPressure", "oil_pressure", "oilp"]);
 
-        const tValRaw = findValue(data, "ThrottlePos");
+        // Handle Gear specifically so that 0 displays as "N"
+        const gearVal = findValue(data, ["Gear", "gear"]);
+        let gearDisplay = "N/A";
+        if (gearVal !== undefined && gearVal !== null && gearVal !== "") {
+            const numGear = Number(gearVal);
+            gearDisplay = (numGear === 0) ? "N" : numGear;
+        }
+        const desktopGear = document.getElementById("val-gear");
+        const mobileGear = document.getElementById("m-val-gear");
+        if (desktopGear) desktopGear.textContent = gearDisplay;
+        if (mobileGear) mobileGear.textContent = gearDisplay;
+
+        const tValRaw = findValue(data, ["ThrottlePos", "throttlepos", "throttle"]);
         let tPercent = 0;
         if (tValRaw !== undefined && tValRaw !== null) {
             let tVal = Number(tValRaw);
             if (tVal <= 1) tVal = tVal * 100;
-            tPercent = Math.min(Math.max(tVal, 0), 100) + "%";
+            tPercent = Math.min(Math.max(tVal, 0), 100).toFixed(2) + "%";
         }
         document.getElementById("throttle-fill").style.width = tPercent;
         const mThrottle = document.getElementById("m-throttle-fill");
         if (mThrottle) mThrottle.style.width = tPercent;
 
-        const bValRaw = findValue(data, "BrakePos");
+        const bValRaw = findValue(data, ["BrakePos", "brakepos", "brake"]);
         let bPercent = 0;
         if (bValRaw !== undefined && bValRaw !== null) {
             let bVal = Number(bValRaw);
             if (bVal <= 1) bVal = bVal * 100;
-            bPercent = Math.min(Math.max(bVal, 0), 100) + "%";
+            bPercent = Math.min(Math.max(bVal, 0), 100).toFixed(2) + "%";
         }
         document.getElementById("brake-fill").style.width = bPercent;
         const mBrake = document.getElementById("m-brake-fill");
         if (mBrake) mBrake.style.width = bPercent;
 
-        updateFieldPair("tyre-fl", "tyre_fl", "°C", "FL: ");
-        updateFieldPair("tyre-fr", "tyre_fr", "°C", "FR: ");
-        updateFieldPair("tyre-rl", "tyre_rl", "°C", "RL: ");
-        updateFieldPair("tyre-rr", "tyre_rr", "°C", "RR: ");
+        updateFieldPair("tyre-fl", ["TyreFL", "tyre_fl", "tyrefl"], "°C", "FL: ");
+        updateFieldPair("tyre-fr", ["TyreFR", "tyre_fr", "tyrefr"], "°C", "FR: ");
+        updateFieldPair("tyre-rl", ["TyreRL", "tyre_rl", "tyrerl"], "°C", "RL: ");
+        updateFieldPair("tyre-rr", ["TyreRR", "tyre_rr", "tyrerr"], "°C", "RR: ");
 
         const leds = ["bspd", "bots", "inertia", "left", "cockpit", "right"];
         leds.forEach(led => {
             const el = document.querySelector(`[id-led="${led}"]`);
             if (el) {
-                const val = findValue(data, led);
+                const val = findValue(data, [led]);
                 if (val) {
                     el.classList.add("active");
                 } else {
@@ -568,10 +601,10 @@
             }
         });
 
-        const pumpVal = findValue(data, "fuel_pump") ?? findValue(data, "fuelpump");
-        const pumpEl = document.getElementById("pump-led");
-        if (pumpEl && pumpVal !== undefined) {
-            if (pumpVal) {
+        const pumpVal = findValue(data, ["FuelPump", "fuel_pump", "fuelpump", "pump"]);
+        const pumpEl = document.getElementById("FuelPump");
+        if (pumpEl) {
+            if (pumpVal !== undefined && pumpVal !== null && Number(pumpVal) === 1) {
                 pumpEl.classList.add("active");
             } else {
                 pumpEl.classList.remove("active");
