@@ -4,15 +4,18 @@
 
 {% block content %}
 <style>
-    /* Dashboard Dark Theme Container */
+    /* ========================================
+       LIGHT THEME (Default / Light Mode)
+       ======================================== */
     .f1-dashboard {
-        background-color: #2c2f33;
-        color: #ffffff;
+        background-color: #f8f9fa;
+        color: #212529;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         padding: 20px;
         border-radius: 8px;
         max-width: 1200px;
         margin: 0 auto;
+        transition: background-color 0.2s, color 0.2s;
     }
 
     .dash-header {
@@ -35,15 +38,8 @@
         display: none;
     }
 
-    /* Medium/Large Screen Layout (Your Preferred Look) */
-    .desktop-layout {
-        display: block;
-    }
-
-    /* Small Screen Layout (Hidden on desktop, shown on mobile) */
-    .mobile-layout {
-        display: none;
-    }
+    .desktop-layout { display: block; }
+    .mobile-layout { display: none; }
 
     .top-gauges {
         display: flex;
@@ -55,8 +51,8 @@
     }
 
     .gauge-box {
-        background: #23272a;
-        border: 2px solid #4f545c;
+        background: #ffffff;
+        border: 2px solid #ced4da;
         border-radius: 50%;
         width: 180px;
         height: 180px;
@@ -65,20 +61,21 @@
         justify-content: center;
         align-items: center;
         text-align: center;
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         flex-shrink: 0;
+        transition: background-color 0.2s, border-color 0.2s;
     }
 
     .gauge-title {
         font-size: 14px;
-        color: #b9bbbe;
+        color: #6c757d;
         letter-spacing: 1px;
     }
 
     .gauge-value {
         font-size: 36px;
         font-weight: bold;
-        color: #ffffff;
+        color: #212529;
         margin-top: 5px;
     }
 
@@ -95,10 +92,10 @@
 
     .bar-container {
         width: 100%;
-        background: #1e2124;
+        background: #e9ecef;
         border-radius: 4px;
         overflow: hidden;
-        border: 1px solid #4f545c;
+        border: 1px solid #ced4da;
         height: 22px;
         position: relative;
     }
@@ -128,17 +125,18 @@
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 20px;
-        background: #23272a;
+        background: #ffffff;
         padding: 20px;
         border-radius: 6px;
-        border: 1px solid #4f545c;
+        border: 1px solid #ced4da;
+        transition: background-color 0.2s, border-color 0.2s;
     }
 
     .section-block h3 {
         text-align: center;
         font-size: 16px;
-        color: #b9bbbe;
-        border-bottom: 1px solid #4f545c;
+        color: #6c757d;
+        border-bottom: 1px solid #ced4da;
         padding-bottom: 5px;
         margin-bottom: 15px;
         letter-spacing: 1px;
@@ -157,16 +155,16 @@
         flex-direction: column;
         align-items: center;
         font-size: 11px;
-        color: #b9bbbe;
+        color: #6c757d;
     }
 
     .led-circle {
         width: 25px;
         height: 25px;
         border-radius: 50%;
-        background-color: #4f545c;
-        border: 2px solid #2c2f33;
-        box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        background-color: #e9ecef;
+        border: 2px solid #ced4da;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         margin-bottom: 5px;
         transition: background-color 0.2s, box-shadow 0.2s;
     }
@@ -185,20 +183,136 @@
         height: 150px;
     }
 
+    .car-box {
+        color: #6c757d;
+        font-size: 12px;
+        text-align: center;
+        border: 1px dashed #ced4da;
+        width: 50px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .tyre-val {
         position: absolute;
         font-weight: bold;
         font-size: 14px;
-        background: #1e2124;
+        background: #f8f9fa;
         padding: 2px 6px;
         border-radius: 4px;
-        border: 1px solid #4f545c;
+        border: 1px solid #ced4da;
+        color: #dc3545;
     }
 
-    #tyre-fl, #m-tyre-fl { top: 10px; left: 15px; color: #dc3545; }
-    #tyre-fr, #m-tyre-fr { top: 10px; right: 15px; color: #dc3545; }
-    #tyre-rl, #m-tyre-rl { bottom: 10px; left: 15px; color: #dc3545; }
-    #tyre-rr, #m-tyre-rr { bottom: 10px; right: 15px; color: #dc3545; }
+    #tyre-fl, #m-tyre-fl { top: 10px; left: 15px; }
+    #tyre-fr, #m-tyre-fr { top: 10px; right: 15px; }
+    #tyre-rl, #m-tyre-rl { bottom: 10px; left: 15px; }
+    #tyre-rr, #m-tyre-rr { bottom: 10px; right: 15px; }
+
+    .mobile-bars-box {
+        background: #ffffff;
+        border: 2px solid #ced4da;
+        border-radius: 12px;
+        width: 150px;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 12px;
+        box-sizing: border-box;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+
+    /* ========================================
+       DARK THEME OVERRIDES (Your Preferred Dark Look)
+       ======================================== */
+    html[data-theme="dark"] .f1-dashboard,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .f1-dashboard {
+            background-color: #2c2f33;
+            color: #ffffff;
+        }
+    }
+
+    html[data-theme="dark"] .gauge-box,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .gauge-box {
+            background: #23272a;
+            border-color: #4f545c;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+    }
+
+    html[data-theme="dark"] .gauge-title,
+    html[data-theme="dark"] .section-block h3,
+    html[data-theme="dark"] .led-item,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .gauge-title,
+        html:not([data-theme="light"]) .section-block h3,
+        html:not([data-theme="light"]) .led-item {
+            color: #b9bbbe;
+        }
+    }
+
+    html[data-theme="dark"] .gauge-value,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .gauge-value {
+            color: #ffffff;
+        }
+    }
+
+    html[data-theme="dark"] .bar-container,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .bar-container {
+            background: #1e2124;
+            border-color: #4f545c;
+        }
+    }
+
+    html[data-theme="dark"] .bottom-panel,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .bottom-panel {
+            background: #23272a;
+            border-color: #4f545c;
+        }
+    }
+
+    html[data-theme="dark"] .led-circle,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .led-circle {
+            background-color: #4f545c;
+            border-color: #2c2f33;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+    }
+
+    html[data-theme="dark"] .tyre-val,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .tyre-val {
+            background: #1e2124;
+            border-color: #4f545c;
+        }
+    }
+
+    html[data-theme="dark"] .car-box,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .car-box {
+            border-color: #4f545c;
+            color: #6c757d;
+        }
+    }
+
+    html[data-theme="dark"] .mobile-bars-box,
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .mobile-bars-box {
+            background: #23272a;
+            border-color: #4f545c;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+    }
 
     /* Switch to mobile layout and stack bottom panel on small screens */
     @media (max-width: 768px) {
@@ -217,7 +331,7 @@
     <div id="status-banner">Waiting for data...</div>
 
     <!-- ========================================== -->
-    <!-- DESKTOP / MEDIUM LOOK (Your Preferred Layout) -->
+    <!-- DESKTOP / MEDIUM LOOK                      -->
     <!-- ========================================== -->
     <div class="desktop-layout">
         <div class="top-gauges">
@@ -267,7 +381,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- SMALL / MOBILE LOOK (Clean Grid Layout)    -->
+    <!-- SMALL / MOBILE LOOK                        -->
     <!-- ========================================== -->
     <div class="mobile-layout">
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; justify-items: center; align-items: center; margin-bottom: 30px;">
@@ -281,7 +395,7 @@
                 <div class="gauge-value" id="m-val-rpm" style="font-size: 24px;">N/A</div>
             </div>
 
-            <div style="background: #23272a; border: 2px solid #4f545c; border-radius: 12px; width: 150px; height: 150px; display: flex; flex-direction: column; justify-content: center; padding: 12px; box-sizing: border-box; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+            <div class="mobile-bars-box">
                 <div class="bar-container" style="margin-top: 0;">
                     <div class="bar-label">THROTTLE</div>
                     <div class="bar-fill" id="m-throttle-fill"></div>
@@ -337,7 +451,7 @@
                 </div>
                 <div style="text-align: center;">
                     <div class="led-circle" id="pump-led" style="margin: 0 auto 5px auto;"></div>
-                    <div style="font-size: 11px; color: #b9bbbe;">FUEL PUMP</div>
+                    <div style="font-size: 11px; color: inherit;">FUEL PUMP</div>
                 </div>
             </div>
         </div>
@@ -345,7 +459,7 @@
         <div class="section-block">
             <h3>Tyres (°C)</h3>
             <div class="tyres-container">
-                <div style="color: #6c757d; font-size: 12px; text-align: center; border: 1px dashed #4f545c; width: 50px; height: 100px; display: flex; align-items: center; justify-content: center;">CAR</div>
+                <div class="car-box">CAR</div>
                 <div class="tyre-val" id="tyre-fl">FL: N/A</div>
                 <div class="tyre-val" id="tyre-fr">FR: N/A</div>
                 <div class="tyre-val" id="tyre-rl">RL: N/A</div>
@@ -380,7 +494,6 @@
             return undefined;
         }
 
-        // Helper that updates both desktop and mobile element IDs simultaneously
         function updateFieldPair(baseId, targetKey, unit = "", prefix = "") {
             const val = findValue(data, targetKey);
             const displayVal = (val !== undefined && val !== null && val !== "") ? (prefix + val + unit) : (prefix + "N/A");
@@ -400,7 +513,6 @@
         updateFieldPair("val-oilp", "oilp");
         updateFieldPair("val-voltage", "voltage", " V");
 
-        // Throttle & Brake update for both layouts
         const tValRaw = findValue(data, "ThrottlePos");
         let tPercent = 0;
         if (tValRaw !== undefined && tValRaw !== null) {
@@ -423,13 +535,11 @@
         const mBrake = document.getElementById("m-brake-fill");
         if (mBrake) mBrake.style.width = bPercent;
 
-        // Tyres
         updateFieldPair("tyre-fl", "tyre_fl", "°C", "FL: ");
         updateFieldPair("tyre-fr", "tyre_fr", "°C", "FR: ");
         updateFieldPair("tyre-rl", "tyre_rl", "°C", "RL: ");
         updateFieldPair("tyre-rr", "tyre_rr", "°C", "RR: ");
 
-        // LEDs/Safety flags
         const leds = ["bspd", "bots", "inertia", "left", "cockpit", "right"];
         leds.forEach(led => {
             const el = document.querySelector(`[id-led="${led}"]`);
