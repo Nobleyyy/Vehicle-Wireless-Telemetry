@@ -1,5 +1,26 @@
-{% extends "base.html" %}{% block title %}Home{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
 
 {% block content %}
-<h1>Home Page</h1>
+<div style="margin-top: 20px;">
+    <h1>Home Page</h1>
+    <p class="lead" style="margin-top: 15px;">
+        Welcome to live telemetry! For live data, check out the 
+        <a href="/live-dashboard">Live Dashboard</a> &amp; 
+        <a href="/live-graph">Graphs</a> pages, and to see historical data, look at the 
+        <a href="/database">Database</a> page.
+    </p>
+</div>
+
+<hr style="margin: 40px 0; border-top: 1px solid rgba(108, 117, 125, 0.2);">
+
+<div style="text-align: center; color: #6c757d; font-size: 14px; margin-bottom: 30px;">
+    <p>
+        Found a bug or experiencing an issue? Please report it on the 
+        <a href="https://github.com/Nobleyyy/Vehicle-Wireless-Telemetry/issues" target="_blank" style="text-decoration: underline;">
+            GitHub Issues page
+        </a>.
+    </p>
+</div>
 {% endblock %}

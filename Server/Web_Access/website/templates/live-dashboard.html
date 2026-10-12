@@ -5,7 +5,7 @@
 {% block content %}
 <style>
     /* ========================================
-       LIGHT THEME (Default / Light Mode)
+       LIGHT THEME (Default / Base Style)
        ======================================== */
     .f1-dashboard {
         background-color: #f8f9fa;
@@ -227,86 +227,101 @@
 
 
     /* ========================================
-       DARK THEME OVERRIDES (Your Preferred Dark Look)
+       DARK THEME (Manual Toggle)
        ======================================== */
-    html[data-theme="dark"] .f1-dashboard,
+    html[data-theme="dark"] .f1-dashboard {
+        background-color: #2c2f33;
+        color: #ffffff;
+    }
+    html[data-theme="dark"] .gauge-box {
+        background: #23272a;
+        border-color: #4f545c;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+    html[data-theme="dark"] .gauge-title,
+    html[data-theme="dark"] .section-block h3,
+    html[data-theme="dark"] .led-item {
+        color: #b9bbbe;
+    }
+    html[data-theme="dark"] .section-block h3 {
+        border-bottom-color: #4f545c;
+    }
+    html[data-theme="dark"] .gauge-value {
+        color: #ffffff;
+    }
+    html[data-theme="dark"] .bar-container {
+        background: #1e2124;
+        border-color: #4f545c;
+    }
+    html[data-theme="dark"] .bottom-panel {
+        background: #23272a;
+        border-color: #4f545c;
+    }
+    html[data-theme="dark"] .led-circle {
+        background-color: #4f545c;
+        border-color: #2c2f33;
+        box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    }
+    html[data-theme="dark"] .tyre-val {
+        background: #1e2124;
+        border-color: #4f545c;
+    }
+    html[data-theme="dark"] .car-box {
+        border-color: #4f545c;
+        color: #6c757d;
+    }
+    html[data-theme="dark"] .mobile-bars-box {
+        background: #23272a;
+        border-color: #4f545c;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+
+
+    /* ========================================
+       SYSTEM DARK MODE
+       ======================================== */
     @media (prefers-color-scheme: dark) {
         html:not([data-theme="light"]) .f1-dashboard {
             background-color: #2c2f33;
             color: #ffffff;
         }
-    }
-
-    html[data-theme="dark"] .gauge-box,
-    @media (prefers-color-scheme: dark) {
         html:not([data-theme="light"]) .gauge-box {
             background: #23272a;
             border-color: #4f545c;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
-    }
-
-    html[data-theme="dark"] .gauge-title,
-    html[data-theme="dark"] .section-block h3,
-    html[data-theme="dark"] .led-item,
-    @media (prefers-color-scheme: dark) {
         html:not([data-theme="light"]) .gauge-title,
         html:not([data-theme="light"]) .section-block h3,
         html:not([data-theme="light"]) .led-item {
             color: #b9bbbe;
         }
-    }
-
-    html[data-theme="dark"] .gauge-value,
-    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .section-block h3 {
+            border-bottom-color: #4f545c;
+        }
         html:not([data-theme="light"]) .gauge-value {
             color: #ffffff;
         }
-    }
-
-    html[data-theme="dark"] .bar-container,
-    @media (prefers-color-scheme: dark) {
         html:not([data-theme="light"]) .bar-container {
             background: #1e2124;
             border-color: #4f545c;
         }
-    }
-
-    html[data-theme="dark"] .bottom-panel,
-    @media (prefers-color-scheme: dark) {
         html:not([data-theme="light"]) .bottom-panel {
             background: #23272a;
             border-color: #4f545c;
         }
-    }
-
-    html[data-theme="dark"] .led-circle,
-    @media (prefers-color-scheme: dark) {
         html:not([data-theme="light"]) .led-circle {
             background-color: #4f545c;
             border-color: #2c2f33;
             box-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
-    }
-
-    html[data-theme="dark"] .tyre-val,
-    @media (prefers-color-scheme: dark) {
         html:not([data-theme="light"]) .tyre-val {
             background: #1e2124;
             border-color: #4f545c;
         }
-    }
-
-    html[data-theme="dark"] .car-box,
-    @media (prefers-color-scheme: dark) {
         html:not([data-theme="light"]) .car-box {
             border-color: #4f545c;
             color: #6c757d;
         }
-    }
-
-    html[data-theme="dark"] .mobile-bars-box,
-    @media (prefers-color-scheme: dark) {
         html:not([data-theme="light"]) .mobile-bars-box {
             background: #23272a;
             border-color: #4f545c;

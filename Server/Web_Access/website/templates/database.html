@@ -37,10 +37,11 @@
        ======================================== */
 
     /* Put the table selector, buttons and loading message
-       on the same horizontal line */
+       on the same horizontal line, allowing wrapping on narrow screens */
     .table-selector {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 10px;
         margin-bottom: 15px;
     }
@@ -56,14 +57,35 @@
 
 
     /* ========================================
+       TABLE SELECTOR DROPDOWN
+       ======================================== */
+
+    #tableSelect {
+        font-size: 14px;
+        height: 25px;
+        padding: 0 8px;
+        box-sizing: border-box;
+        border: 1px solid #767676;
+        border-radius: 4px;
+        background-color: #fff;
+        color: #000;
+        cursor: pointer;
+    }
+
+
+    /* ========================================
        DOWNLOAD BUTTON
        ======================================== */
 
-    /* Style the CSV download button */
+    /* Style the CSV download button with a height of 25px */
     #downloadButton {
-        font-size: 15px;
-        padding: 2px 8px;
+        font-size: 14px;
         height: 25px;
+        padding: 0 10px;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
 
         /* White background with black text */
@@ -74,7 +96,8 @@
         border: 1px solid #767676;
 
         /* Slightly round the corners */
-        border-radius: 2px;
+        border-radius: 4px;
+        white-space: nowrap;
     }
 
 
@@ -82,11 +105,15 @@
        DELETE BUTTON
        ======================================== */
 
-    /* Style the session delete button */
+    /* Style the session delete button with a height of 25px */
     #deleteButton {
-        font-size: 15px;
-        padding: 2px 8px;
+        font-size: 14px;
         height: 25px;
+        padding: 0 10px;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
 
         /* Red indicates a destructive action */
@@ -96,7 +123,8 @@
         /* Darker red border */
         border: 1px solid #b02a37;
 
-        border-radius: 2px;
+        border-radius: 4px;
+        white-space: nowrap;
     }
 
 
@@ -227,6 +255,7 @@
         background-color: #d3d3d3;
         color: #000;
         border: 1px solid #888;
+        border-radius: 4px;
     }
 
     /* Change the download button appearance in dark mode */
