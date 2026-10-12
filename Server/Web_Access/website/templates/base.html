@@ -592,57 +592,51 @@
             /*
                 Apply the selected theme to the webpage.
             */
+            /*
+                Apply the selected theme to the webpage.
+            */
             function applyTheme(theme) {
 
-
-                /*
-                    System mode removes the data-theme attribute.
-
-                    This allows the CSS @media
-                    prefers-color-scheme rules to decide
-                    whether the page should be light or dark.
-                */
                 if (theme === "system") {
-
-                    document.documentElement.removeAttribute(
-                        "data-theme"
-                    );
-
+                    // If system is selected, check the OS preference dynamically
+                    // and apply data-theme="dark" so component styles match manual dark mode.
+                    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                        document.documentElement.setAttribute("data-theme", "dark");
+                    } else {
+                        document.documentElement.removeAttribute("data-theme");
+                    }
                 } else {
-
                     /*
                         Light or dark mode explicitly sets
                         the data-theme attribute on the HTML element.
-
-                        For example:
-
-                            <html data-theme="dark">
-
-                        The CSS rules above then apply the
-                        appropriate colours.
                     */
                     document.documentElement.setAttribute(
                         "data-theme",
                         theme
                     );
-
                 }
-
 
                 /*
                     Update the button text.
-
-                    This converts:
-
-                        system -> System
-                        light  -> Light
-                        dark   -> Dark
                 */
                 themeToggle.textContent =
                     theme.charAt(0).toUpperCase()
                     + theme.slice(1);
-
             }
+
+            /*
+                Listen for live changes to the operating system's theme
+                when the user has "system" selected.
+            */
+            window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+                if (currentTheme === "system") {
+                    if (e.matches) {
+                        document.documentElement.setAttribute("data-theme", "dark");
+                    } else {
+                        document.documentElement.removeAttribute("data-theme");
+                    }
+                }
+            });
 
 
             /*
