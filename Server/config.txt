@@ -1,6 +1,6 @@
 server_ip: "localhost"
 server_hostname: "localhost"
-actual_server_ip: "localhost"
+lan_server_ip: "localhost"
 
 server_web_port: "5000"
 server_vehicle_port: "5001"
