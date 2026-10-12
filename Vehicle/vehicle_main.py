@@ -119,6 +119,9 @@ class Data_Client():
             ssl.Purpose.SERVER_AUTH,
             cafile=CA_CERTIFICATE
         )
+        # Bypass strict validation on Python 3.13
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
 
         self.connection = context.wrap_socket(
             raw_socket,
