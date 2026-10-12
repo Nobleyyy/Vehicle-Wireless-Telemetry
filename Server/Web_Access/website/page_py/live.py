@@ -121,6 +121,7 @@ def live_stream():
         finally:
             # Close the Windows event when the listener thread stops
             win32api.CloseHandle(event)
+            
     # Run the database listener in a background thread
     thread = threading.Thread(target=database_listener, daemon=True)
     thread.start()
@@ -134,5 +135,14 @@ def live_stream():
                 yield ("data: " + json.dumps(record) + "\n\n")
         finally:
             stop_event.set()
-    # Return a streaming response using the Server-Sent Events format
-    return Response(generate(), mimetype="text/event-stream")
+            
+    # Return a streaming response using the Server-Sent Events format with anti-buffering headers
+    return Response(
+        generate(),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive"
+        }
+    )
