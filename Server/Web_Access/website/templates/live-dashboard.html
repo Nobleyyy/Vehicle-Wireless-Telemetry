@@ -435,7 +435,7 @@
 
             <div class="gauge-box" style="width: 150px; height: 150px;">
                 <div class="gauge-title">OIL P</div>
-                <div class="gauge-value" id="m-val-oilp" style="font-size: 24px;">N/A</div>
+                <div class="gauge-value" id="val-oilp" style="font-size: 24px;">N/A</div>
             </div>
 
             <div class="gauge-box" style="width: 150px; height: 150px; grid-column: span 2; justify-self: center;">
@@ -532,6 +532,8 @@
 
         function updateFieldPair(baseId, targetKeys, unit = "", prefix = "") {
             const val = findValue(data, targetKeys);
+            if (val === undefined || val === null) return; // Keep previous value if not in this packet
+
             const formatted = formatNumber(val);
             const displayVal = (formatted !== "N/A") ? (prefix + formatted + unit) : (prefix + "N/A");
             
@@ -542,69 +544,68 @@
             if (mobileEl) mobileEl.textContent = displayVal;
         }
 
-        updateFieldPair("val-speed", ["VehicleSpeed", "vehiclespeed", "speed"]);
+        updateFieldPair("val-speed", ["VehicleSpeed", "vehiclespeed", "speed", "drivenspeed", "gpsspeed"]);
         updateFieldPair("val-rpm", ["EngineRPM", "enginerpm", "rpm"]);
-        updateFieldPair("val-engtemp", ["EngineTemp", "enginetemp", "eng_temp"], "°C");
-        updateFieldPair("val-voltage", ["BatteryVoltage", "batteryvoltage", "voltage"], " V");
-        updateFieldPair("val-fuelp", ["FuelPressure", "fuel_pressure", "fuelp"]);
-        updateFieldPair("val-oilp", ["OilPressure", "oil_pressure", "oilp"]);
+        updateFieldPair("val-engtemp", ["EngineTemp", "enginetemp", "eng_temp", "ect1", "ect2"], "°C");
+        updateFieldPair("val-voltage", ["BatteryVoltage", "batteryvoltage", "voltage", "vbat"], " V");
+        updateFieldPair("val-fuelp", ["FuelPressure", "fuel_pressure", "fuelp", "relfp1", "relfp2", "fuelpreinj"]);
+        updateFieldPair("val-oilp", ["OilPressure", "oil_pressure", "oilp", "eop1", "eop2", "eop3"]);
 
         // Handle Gear specifically so that 0 displays as "N"
         const gearVal = findValue(data, ["Gear", "gear"]);
-        let gearDisplay = "N/A";
         if (gearVal !== undefined && gearVal !== null && gearVal !== "") {
             const numGear = Number(gearVal);
-            gearDisplay = (numGear === 0) ? "N" : numGear;
+            const gearDisplay = (numGear === 0) ? "N" : numGear;
+            const desktopGear = document.getElementById("val-gear");
+            const mobileGear = document.getElementById("m-val-gear");
+            if (desktopGear) desktopGear.textContent = gearDisplay;
+            if (mobileGear) mobileGear.textContent = gearDisplay;
         }
-        const desktopGear = document.getElementById("val-gear");
-        const mobileGear = document.getElementById("m-val-gear");
-        if (desktopGear) desktopGear.textContent = gearDisplay;
-        if (mobileGear) mobileGear.textContent = gearDisplay;
 
-        const tValRaw = findValue(data, ["ThrottlePos", "throttlepos", "throttle"]);
-        let tPercent = 0;
+        const tValRaw = findValue(data, ["ThrottlePos", "throttlepos", "throttle", "ppsdriver"]);
         if (tValRaw !== undefined && tValRaw !== null) {
             let tVal = Number(tValRaw);
             if (tVal <= 1) tVal = tVal * 100;
-            tPercent = Math.min(Math.max(tVal, 0), 100).toFixed(2) + "%";
+            const tPercent = Math.min(Math.max(tVal, 0), 100).toFixed(2) + "%";
+            document.getElementById("throttle-fill").style.width = tPercent;
+            const mThrottle = document.getElementById("m-throttle-fill");
+            if (mThrottle) mThrottle.style.width = tPercent;
         }
-        document.getElementById("throttle-fill").style.width = tPercent;
-        const mThrottle = document.getElementById("m-throttle-fill");
-        if (mThrottle) mThrottle.style.width = tPercent;
 
-        const bValRaw = findValue(data, ["BrakePos", "brakepos", "brake"]);
-        let bPercent = 0;
+        const bValRaw = findValue(data, ["BrakePos", "brakepos", "brake", "bpf", "brakepressurefront"]);
         if (bValRaw !== undefined && bValRaw !== null) {
             let bVal = Number(bValRaw);
             if (bVal <= 1) bVal = bVal * 100;
-            bPercent = Math.min(Math.max(bVal, 0), 100).toFixed(2) + "%";
+            const bPercent = Math.min(Math.max(bVal, 0), 100).toFixed(2) + "%";
+            document.getElementById("brake-fill").style.width = bPercent;
+            const mBrake = document.getElementById("m-brake-fill");
+            if (mBrake) mBrake.style.width = bPercent;
         }
-        document.getElementById("brake-fill").style.width = bPercent;
-        const mBrake = document.getElementById("m-brake-fill");
-        if (mBrake) mBrake.style.width = bPercent;
 
-        updateFieldPair("tyre-fl", ["TyreFL", "tyre_fl", "tyrefl"], "°C", "FL: ");
-        updateFieldPair("tyre-fr", ["TyreFR", "tyre_fr", "tyrefr"], "°C", "FR: ");
-        updateFieldPair("tyre-rl", ["TyreRL", "tyre_rl", "tyrerl"], "°C", "RL: ");
-        updateFieldPair("tyre-rr", ["TyreRR", "tyre_rr", "tyrerr"], "°C", "RR: ");
+        updateFieldPair("tyre-fl", ["TyreFL", "tyre_fl", "tyrefl", "flspeed"], "°C", "FL: ");
+        updateFieldPair("tyre-fr", ["TyreFR", "tyre_fr", "tyrefr", "frspeed"], "°C", "FR: ");
+        updateFieldPair("tyre-rl", ["TyreRL", "tyre_rl", "tyrerl", "rlspeed"], "°C", "RL: ");
+        updateFieldPair("tyre-rr", ["TyreRR", "tyre_rr", "tyrerr", "rrspeed"], "°C", "RR: ");
 
         const leds = ["bspd", "bots", "inertia", "left", "cockpit", "right"];
         leds.forEach(led => {
             const el = document.querySelector(`[id-led="${led}"]`);
             if (el) {
                 const val = findValue(data, [led]);
-                if (val) {
-                    el.classList.add("active");
-                } else {
-                    el.classList.remove("active");
+                if (val !== undefined) {
+                    if (val) {
+                        el.classList.add("active");
+                    } else {
+                        el.classList.remove("active");
+                    }
                 }
             }
         });
 
-        const pumpVal = findValue(data, ["FuelPump", "fuel_pump", "fuelpump", "pump"]);
+        const pumpVal = findValue(data, ["FuelPump", "fuel_pump", "fuelpump", "pump", "fuelpump1"]);
         const pumpEl = document.getElementById("FuelPump");
-        if (pumpEl) {
-            if (pumpVal !== undefined && pumpVal !== null && Number(pumpVal) === 1) {
+        if (pumpEl && pumpVal !== undefined) {
+            if (Number(pumpVal) === 1) {
                 pumpEl.classList.add("active");
             } else {
                 pumpEl.classList.remove("active");
