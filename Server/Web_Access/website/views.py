@@ -45,6 +45,16 @@ def live_dashboard():
     )
 
 
+@views.route("/live-engine")
+@login_required
+def live_engine():
+    # Display live engine page
+    return render_template(
+        "live-engine.html",
+        user=current_user
+    )
+
+
 @views.route("/live-graph")
 @login_required
 def live_graph():

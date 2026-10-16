@@ -335,6 +335,7 @@
                         <a class="nav-link" href="/">Home</a>
                         <a class="nav-link d-none d-lg-block" href="/live-dashboard">Live</a>
                         <a class="nav-link d-lg-none" href="/live-dashboard">Live Dashboard</a>
+                        <a class="nav-link d-lg-none" href="/live-graph">Live Engine</a>
                         <a class="nav-link d-lg-none" href="/live-graph">Live Graph</a>
                         <a class="nav-link" href="/database">Database</a>
                         <a class="nav-link" href="/logout">Logout</a>
@@ -357,7 +358,7 @@
 
         </nav>
 
-        {% if user.is_authenticated and request.path in ['/live-dashboard', '/live-graph'] %}
+        {% if user.is_authenticated and request.path in ['/live-dashboard', '/live-engine', '/live-graph'] %}
         <div class="live-subnav d-none d-lg-block">
             <div class="container">
                 <ul class="nav">
@@ -367,6 +368,15 @@
                             href="/live-dashboard"
                         >
                             Dashboard
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a
+                            class="nav-link {% if request.path == '/live-engine' %}active{% endif %}"
+                            href="/live-engine"
+                        >
+                            Engine
                         </a>
                     </li>
 
