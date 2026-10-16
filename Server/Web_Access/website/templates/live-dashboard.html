@@ -38,6 +38,7 @@
         display: none;
     }
 
+    /* Layout Toggle Defaults */
     .desktop-layout { display: block; }
     .mobile-layout { display: none; }
 
@@ -331,14 +332,145 @@
         }
     }
 
-    /* Switch to mobile layout and stack bottom panel on small screens */
-    @media (max-width: 768px) {
-        .desktop-layout { display: none; }
-        .mobile-layout { display: block; }
+    /* ========================================
+       MOBILE SWITCHING (Portrait / Default Mobile)
+       ======================================== */
+    @media (max-width: 950px) and (orientation: portrait) {
+        .desktop-layout { display: none !important; }
+        .mobile-layout { display: block !important; }
+
+        .mobile-gauges-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            justify-items: center;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
         .bottom-panel {
             grid-template-columns: 1fr;
             gap: 20px;
         }
+    }
+
+    /* ========================================
+       PHONE LANDSCAPE ONLY (Optimized Fluid Scaling)
+       ======================================== */
+    @media (max-height: 550px) and (orientation: landscape) and (pointer: coarse) {
+        .desktop-layout { display: none !important; }
+        .mobile-layout { display: block !important; }
+
+        .f1-dashboard {
+            padding: 2px 4px;
+            max-width: 100%;
+        }
+        .dash-header {
+            font-size: clamp(11px, 2.2vh, 15px);
+            margin-bottom: 2px;
+        }
+        #status-banner {
+            padding: 2px;
+            margin-bottom: 2px;
+            font-size: 10px;
+        }
+        
+        .mobile-layout {
+            display: flex !important;
+            flex-direction: row;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-gauges-grid {
+            flex: 1.1;
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 4px !important;
+            margin-bottom: 0 !important;
+            justify-items: center;
+            align-items: center;
+        }
+
+        .mobile-right-panel {
+            flex: 0.9;
+        }
+
+        /* Scaled up slightly to fill the remaining empty space without scrolling */
+        .gauge-box, .mobile-bars-box {
+            width: clamp(72px, 21vh, 110px) !important;
+            height: clamp(72px, 21vh, 110px) !important;
+            padding: 2px !important;
+        }
+        .gauge-title {
+            font-size: clamp(8px, 1.5vh, 11px);
+        }
+        .gauge-value {
+            font-size: clamp(13px, 3.4vh, 20px) !important;
+            margin-top: 1px !important;
+        }
+
+        .mobile-bars-box .bar-container {
+            height: clamp(12px, 3vh, 17px) !important;
+        }
+        .mobile-bars-box .bar-label {
+            font-size: clamp(8px, 1.5vh, 10px);
+            line-height: clamp(12px, 3vh, 17px);
+        }
+
+        .mobile-right-panel .bottom-panel {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            padding: 4px 6px !important;
+            gap: 3px !important;
+        }
+        .mobile-right-panel .section-block h3 {
+            font-size: clamp(9px, 1.7vh, 12px);
+            margin-bottom: 2px;
+            padding-bottom: 1px;
+        }
+        .mobile-right-panel .led-grid {
+            gap: 4px;
+        }
+        .mobile-right-panel .led-circle {
+            width: clamp(14px, 3.2vh, 19px);
+            height: clamp(14px, 3.2vh, 19px);
+            border-width: 1px;
+            margin-bottom: 1px;
+        }
+        .mobile-right-panel .led-item {
+            font-size: clamp(8px, 1.4vh, 10px);
+        }
+        .mobile-right-panel .stats-section-content {
+            height: clamp(32px, 8vh, 48px) !important;
+        }
+        .mobile-right-panel .stats-section-content div[style*="font-size: 24px"] {
+            font-size: clamp(14px, 3.2vh, 18px) !important;
+        }
+        .mobile-right-panel .stats-section-content div[style*="font-size: 14px"] {
+            font-size: clamp(10px, 1.8vh, 12px) !important;
+            margin-top: 0px !important;
+        }
+        .mobile-right-panel .stats-section-content div[style*="font-size: 11px"] {
+            font-size: clamp(8px, 1.4vh, 10px) !important;
+        }
+        .mobile-right-panel .tyres-container {
+            height: clamp(40px, 9.5vh, 60px) !important;
+        }
+        .mobile-right-panel .car-box {
+            width: clamp(20px, 4.5vh, 30px);
+            height: clamp(34px, 8vh, 52px);
+            font-size: clamp(7px, 1.3vh, 9px);
+        }
+        .mobile-right-panel .tyre-val {
+            font-size: clamp(8px, 1.4vh, 10px);
+            padding: 0px 2px;
+        }
+        #tyre-fl, #m-tyre-fl { top: 1px; left: 1px; }
+        #tyre-fr, #m-tyre-fr { top: 1px; right: 1px; }
+        #tyre-rl, #m-tyre-rl { bottom: 1px; left: 1px; }
+        #tyre-rr, #m-tyre-rr { bottom: 1px; right: 1px; }
     }
 </style>
 
@@ -395,13 +527,54 @@
                 <div class="gauge-value" id="val-engtemp" style="font-size: 24px;">N/A</div>
             </div>
         </div>
+
+        <!-- Desktop Bottom Panel -->
+        <div class="bottom-panel">
+            <div class="section-block">
+                <h3>SAFETY</h3>
+                <div class="led-grid">
+                    <div class="led-item"><div class="led-circle" id-led="bspd"></div>BSPD</div>
+                    <div class="led-item"><div class="led-circle" id-led="bots"></div>BOTS</div>
+                    <div class="led-item"><div class="led-circle" id-led="inertia"></div>Inertia</div>
+                    <div class="led-item"><div class="led-circle" id-led="left"></div>Left</div>
+                    <div class="led-item"><div class="led-circle" id-led="cockpit"></div>Cockpit</div>
+                    <div class="led-item"><div class="led-circle" id-led="right"></div>Right</div>
+                </div>
+            </div>
+
+            <div class="section-block">
+                <h3>STATS</h3>
+                <div class="stats-section-content" style="display: flex; justify-content: space-around; align-items: center; height: 100px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; color: #dc3545;">🔋</div>
+                        <div id="val-voltage" style="font-size: 14px; margin-top: 5px;">N/A</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="led-circle" id="FuelPump" style="margin: 0 auto 5px auto;"></div>
+                        <div style="font-size: 11px; color: inherit;">FUEL PUMP</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-block">
+                <h3>Tyres (°C)</h3>
+                <div class="tyres-container">
+                    <div class="car-box">CAR</div>
+                    <div class="tyre-val" id="tyre-fl">FL: N/A</div>
+                    <div class="tyre-val" id="tyre-fr">FR: N/A</div>
+                    <div class="tyre-val" id="tyre-rl">RL: N/A</div>
+                    <div class="tyre-val" id="tyre-rr">RR: N/A</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ========================================== -->
     <!-- SMALL / MOBILE LOOK                        -->
     <!-- ========================================== -->
     <div class="mobile-layout">
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; justify-items: center; align-items: center; margin-bottom: 30px;">
+        <!-- Gauges Grid -->
+        <div class="mobile-gauges-grid">
             <div class="gauge-box" style="width: 150px; height: 150px;">
                 <div class="gauge-title">SPEED</div>
                 <div class="gauge-value" id="m-val-speed" style="font-size: 28px;">N/A</div>
@@ -443,44 +616,46 @@
                 <div class="gauge-value" id="m-val-engtemp" style="font-size: 24px;">N/A</div>
             </div>
         </div>
-    </div>
 
-    <!-- Bottom Row: Safety, Stats, Tyres (Shared) -->
-    <div class="bottom-panel">
-        <div class="section-block">
-            <h3>SAFETY</h3>
-            <div class="led-grid">
-                <div class="led-item"><div class="led-circle" id-led="bspd"></div>BSPD</div>
-                <div class="led-item"><div class="led-circle" id-led="bots"></div>BOTS</div>
-                <div class="led-item"><div class="led-circle" id-led="inertia"></div>Inertia</div>
-                <div class="led-item"><div class="led-circle" id-led="left"></div>Left</div>
-                <div class="led-item"><div class="led-circle" id-led="cockpit"></div>Cockpit</div>
-                <div class="led-item"><div class="led-circle" id-led="right"></div>Right</div>
-            </div>
-        </div>
-
-        <div class="section-block">
-            <h3>STATS</h3>
-            <div style="display: flex; justify-content: space-around; align-items: center; height: 100px;">
-                <div style="text-align: center;">
-                    <div style="font-size: 24px; color: #dc3545;">🔋</div>
-                    <div id="val-voltage" style="font-size: 14px; margin-top: 5px;">N/A</div>
+        <!-- Mobile Right / Bottom Panel -->
+        <div class="mobile-right-panel">
+            <div class="bottom-panel">
+                <div class="section-block">
+                    <h3>SAFETY</h3>
+                    <div class="led-grid">
+                        <div class="led-item"><div class="led-circle" id-led="bspd"></div>BSPD</div>
+                        <div class="led-item"><div class="led-circle" id-led="bots"></div>BOTS</div>
+                        <div class="led-item"><div class="led-circle" id-led="inertia"></div>Inertia</div>
+                        <div class="led-item"><div class="led-circle" id-led="left"></div>Left</div>
+                        <div class="led-item"><div class="led-circle" id-led="cockpit"></div>Cockpit</div>
+                        <div class="led-item"><div class="led-circle" id-led="right"></div>Right</div>
+                    </div>
                 </div>
-                <div style="text-align: center;">
-                    <div class="led-circle" id="FuelPump" style="margin: 0 auto 5px auto;"></div>
-                    <div style="font-size: 11px; color: inherit;">FUEL PUMP</div>
-                </div>
-            </div>
-        </div>
 
-        <div class="section-block">
-            <h3>Tyres (°C)</h3>
-            <div class="tyres-container">
-                <div class="car-box">CAR</div>
-                <div class="tyre-val" id="tyre-fl">FL: N/A</div>
-                <div class="tyre-val" id="tyre-fr">FR: N/A</div>
-                <div class="tyre-val" id="tyre-rl">RL: N/A</div>
-                <div class="tyre-val" id="tyre-rr">RR: N/A</div>
+                <div class="section-block">
+                    <h3>STATS</h3>
+                    <div class="stats-section-content" style="display: flex; justify-content: space-around; align-items: center; height: 100px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; color: #dc3545;">🔋</div>
+                            <div id="val-voltage" style="font-size: 14px; margin-top: 5px;">N/A</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="led-circle" id="FuelPump" style="margin: 0 auto 5px auto;"></div>
+                            <div style="font-size: 11px; color: inherit;">FUEL PUMP</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <h3>Tyres (°C)</h3>
+                    <div class="tyres-container">
+                        <div class="car-box">CAR</div>
+                        <div class="tyre-val" id="tyre-fl">FL: N/A</div>
+                        <div class="tyre-val" id="tyre-fr">FR: N/A</div>
+                        <div class="tyre-val" id="tyre-rl">RL: N/A</div>
+                        <div class="tyre-val" id="tyre-rr">RR: N/A</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -589,28 +764,30 @@
 
         const leds = ["bspd", "bots", "inertia", "left", "cockpit", "right"];
         leds.forEach(led => {
-            const el = document.querySelector(`[id-led="${led}"]`);
-            if (el) {
+            const el = document.querySelectorAll(`[id-led="${led}"]`);
+            el.forEach(e => {
                 const val = findValue(data, [led]);
                 if (val !== undefined) {
                     if (val) {
-                        el.classList.add("active");
+                        e.classList.add("active");
                     } else {
-                        el.classList.remove("active");
+                        e.classList.remove("active");
                     }
                 }
-            }
+            });
         });
 
         const pumpVal = findValue(data, ["FuelPump", "fuel_pump", "fuelpump", "pump", "fuelpump1"]);
-        const pumpEl = document.getElementById("FuelPump");
-        if (pumpEl && pumpVal !== undefined) {
-            if (Number(pumpVal) === 1) {
-                pumpEl.classList.add("active");
-            } else {
-                pumpEl.classList.remove("active");
+        const pumpEls = document.querySelectorAll("#FuelPump");
+        pumpEls.forEach(pumpEl => {
+            if (pumpEl && pumpVal !== undefined) {
+                if (Number(pumpVal) === 1) {
+                    pumpEl.classList.add("active");
+                } else {
+                    pumpEl.classList.remove("active");
+                }
             }
-        }
+        });
     };
 
     events.onerror = function() {
