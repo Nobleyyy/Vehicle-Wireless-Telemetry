@@ -3,7 +3,749 @@
 {% block title %}Live Engine{% endblock %}
 
 {% block content %}
+<style>
+    /* ========================================
+       LIGHT THEME (Default / Base Style)
+       ======================================== */
+    .f1-dashboard {
+        background-color: #f8f9fa;
+        color: #212529;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 15px 20px;
+        border-radius: 8px;
+        max-width: 1200px;
+        margin: 0 auto;
+        transition: background-color 0.2s, color 0.2s;
+    }
+
+    .dash-header {
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    /* Status Connection Warning */
+    #status-banner {
+        background-color: #dc3545;
+        color: white;
+        text-align: center;
+        padding: 10px;
+        font-weight: bold;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        display: none;
+    }
+
+    /* Layout Toggle Defaults */
+    .desktop-layout { display: block; }
+    .mobile-layout { display: none; }
+
+    .top-gauges {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .gauge-box {
+        background: #ffffff;
+        border: 2px solid #ced4da;
+        border-radius: 50%;
+        width: 150px;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        flex-shrink: 0;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .gauge-title {
+        font-size: 12px;
+        color: #6c757d;
+        letter-spacing: 1px;
+        padding: 0 10px;
+    }
+
+    .gauge-value {
+        font-size: 26px;
+        font-weight: bold;
+        color: #212529;
+        margin-top: 4px;
+    }
+
+    /* Central Pedals / Bars */
+    .center-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        min-width: 200px;
+        flex-shrink: 0;
+    }
+
+    .bar-container {
+        width: 100%;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid #ced4da;
+        height: 20px;
+        position: relative;
+    }
+
+    .bar-fill {
+        height: 100%;
+        width: 0%;
+        transition: width 0.1s ease;
+    }
+
+    #throttle-fill, #m-throttle-fill { background-color: #28a745; }
+    #brake-fill, #m-brake-fill { background-color: #dc3545; }
+
+    .bar-label {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 20px;
+        color: #fff;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+    /* Bottom Panel (Safety, Stats, Fans) */
+    .bottom-panel {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .section-block h3 {
+        text-align: center;
+        font-size: 15px;
+        color: #6c757d;
+        border-bottom: 1px solid #ced4da;
+        padding-bottom: 4px;
+        margin-bottom: 12px;
+        letter-spacing: 1px;
+    }
+
+    /* Safety Indicators / LEDs */
+    .led-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        text-align: center;
+    }
+
+    .led-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 11px;
+        color: #6c757d;
+    }
+
+    .led-circle {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        border: 2px solid #ced4da;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 4px;
+        transition: background-color 0.2s, box-shadow 0.2s;
+    }
+
+    .led-circle.active,
+    #FuelPump.active {
+        background-color: #28a745 !important;
+        box-shadow: 0 0 10px #28a745 !important;
+    }
 
 
+    /* ========================================
+       DARK THEME (Manual Toggle)
+       ======================================== */
+    html[data-theme="dark"] .f1-dashboard {
+        background-color: #2c2f33;
+        color: #ffffff;
+    }
+    html[data-theme="dark"] .gauge-box {
+        background: #23272a;
+        border-color: #4f545c;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+    html[data-theme="dark"] .gauge-title,
+    html[data-theme="dark"] .section-block h3,
+    html[data-theme="dark"] .led-item {
+        color: #b9bbbe;
+    }
+    html[data-theme="dark"] .section-block h3 {
+        border-bottom-color: #4f545c;
+    }
+    html[data-theme="dark"] .gauge-value {
+        color: #ffffff;
+    }
+    html[data-theme="dark"] .bar-container {
+        background: #1e2124;
+        border-color: #4f545c;
+    }
+    html[data-theme="dark"] .bottom-panel {
+        background: #23272a;
+        border-color: #4f545c;
+    }
+    html[data-theme="dark"] .led-circle {
+        background-color: #4f545c;
+        border-color: #2c2f33;
+        box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    }
 
+
+    /* ========================================
+       SYSTEM DARK MODE
+       ======================================== */
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .f1-dashboard {
+            background-color: #2c2f33;
+            color: #ffffff;
+        }
+        html:not([data-theme="light"]) .gauge-box {
+            background: #23272a;
+            border-color: #4f545c;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        html:not([data-theme="light"]) .gauge-title,
+        html:not([data-theme="light"]) .section-block h3,
+        html:not([data-theme="light"]) .led-item {
+            color: #b9bbbe;
+        }
+        html:not([data-theme="light"]) .section-block h3 {
+            border-bottom-color: #4f545c;
+        }
+        html:not([data-theme="light"]) .gauge-value {
+            color: #ffffff;
+        }
+        html:not([data-theme="light"]) .bar-container {
+            background: #1e2124;
+            border-color: #4f545c;
+        }
+        html:not([data-theme="light"]) .bottom-panel {
+            background: #23272a;
+            border-color: #4f545c;
+        }
+        html:not([data-theme="light"]) .led-circle {
+            background-color: #4f545c;
+            border-color: #2c2f33;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+    }
+
+    /* ========================================
+       MOBILE SWITCHING (Portrait / Default Mobile)
+       ======================================== */
+    @media (max-width: 950px) and (orientation: portrait) {
+        .desktop-layout { display: none !important; }
+        .mobile-layout { display: block !important; }
+
+        .mobile-gauges-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            justify-items: center;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .bottom-panel {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+    }
+
+    /* ========================================
+       PHONE LANDSCAPE ONLY (Fully Expanded Layout)
+       ======================================== */
+    @media (max-height: 550px) and (orientation: landscape) and (pointer: coarse) {
+        .desktop-layout { display: none !important; }
+        .mobile-layout { display: block !important; }
+
+        .f1-dashboard {
+            padding: 2px 4px;
+            max-width: 100%;
+        }
+        .dash-header {
+            font-size: clamp(11px, 2.2vh, 15px);
+            margin-bottom: 2px;
+        }
+        #status-banner {
+            padding: 2px;
+            margin-bottom: 2px;
+            font-size: 10px;
+        }
+        
+        .mobile-layout {
+            display: flex !important;
+            flex-direction: row;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-gauges-grid {
+            flex: 1.1;
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            grid-template-rows: repeat(3, 1fr) !important;
+            gap: 4px !important;
+            margin-bottom: 0 !important;
+            justify-items: center;
+            align-items: center;
+        }
+
+        .mobile-right-panel {
+            flex: 0.9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .gauge-box {
+            width: clamp(70px, 20vh, 110px) !important;
+            height: clamp(70px, 20vh, 110px) !important;
+            padding: 2px !important;
+        }
+        .gauge-title {
+            font-size: clamp(7px, 1.4vh, 10px);
+        }
+        .gauge-value {
+            font-size: clamp(12px, 3.2vh, 20px) !important;
+            margin-top: 1px !important;
+        }
+
+        .mobile-right-panel .bottom-panel {
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 6px 8px !important;
+            gap: 6px !important;
+            box-sizing: border-box;
+        }
+        .mobile-right-panel .section-block h3 {
+            font-size: clamp(8px, 1.5vh, 11px);
+            margin-bottom: 3px;
+            padding-bottom: 1px;
+        }
+        .mobile-right-panel .led-grid {
+            gap: 5px;
+        }
+        .mobile-right-panel .led-circle {
+            width: clamp(13px, 2.8vh, 18px);
+            height: clamp(13px, 2.8vh, 18px);
+            border-width: 1px;
+            margin-bottom: 1px;
+        }
+        .mobile-right-panel .led-item {
+            font-size: clamp(7px, 1.2vh, 9px);
+        }
+    }
+</style>
+
+<div class="f1-dashboard">
+    <div class="dash-header">LIVE ENGINE DATA</div>
+
+    <div id="status-banner">Waiting for data...</div>
+
+    <!-- ========================================== -->
+    <!-- DESKTOP / MEDIUM LOOK                      -->
+    <!-- ========================================== -->
+    <div class="desktop-layout">
+        <!-- Row 1: Core Engine Gauges -->
+        <div class="top-gauges">
+            <div class="gauge-box">
+                <div class="gauge-title">RPM</div>
+                <div class="gauge-value" id="val-rpm">N/A</div>
+            </div>
+
+            <div class="center-panel">
+                <div class="gauge-box" style="width: 135px; height: 135px;">
+                    <div class="gauge-title">DRIVER PEDAL</div>
+                    <div class="gauge-value" id="val-pps" style="font-size: 22px;">N/A</div>
+                </div>
+                
+                <div style="width: 100%;">
+                    <div class="bar-container">
+                        <div class="bar-label">THROTTLE</div>
+                        <div class="bar-fill" id="throttle-fill"></div>
+                    </div>
+                    <div class="bar-container" style="margin-top: 4px;">
+                        <div class="bar-label">BRAKE/BPF</div>
+                        <div class="bar-fill" id="brake-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">BATTERY (VBAT)</div>
+                <div class="gauge-value" id="val-vbat">N/A</div>
+            </div>
+        </div>
+
+        <!-- Row 2: Pressures & Manifolds (Map, Turbo, Fuel Pressures) -->
+        <div class="top-gauges">
+            <div class="gauge-box" style="width: 135px; height: 135px;">
+                <div class="gauge-title">MAP 1 / MAP 2</div>
+                <div class="gauge-value" id="val-map" style="font-size: 18px;">N/A</div>
+            </div>
+            <div class="gauge-box" style="width: 135px; height: 135px;">
+                <div class="gauge-title">TURBO SP 1/2</div>
+                <div class="gauge-value" id="val-turbospeed" style="font-size: 16px;">N/A</div>
+            </div>
+            <div class="gauge-box" style="width: 135px; height: 135px;">
+                <div class="gauge-title">FUEL PRESS 1/2</div>
+                <div class="gauge-value" id="val-relfp" style="font-size: 16px;">N/A</div>
+            </div>
+            <div class="gauge-box" style="width: 135px; height: 135px;">
+                <div class="gauge-title">OIL PRESS (EOP)</div>
+                <div class="gauge-value" id="val-eop" style="font-size: 18px;">N/A</div>
+            </div>
+        </div>
+
+        <!-- Row 3: Temperatures & Lambdas -->
+        <div class="top-gauges" style="margin-bottom: 20px;">
+            <div class="gauge-box" style="width: 135px; height: 135px;">
+                <div class="gauge-title">AIR TEMP (ACT)</div>
+                <div class="gauge-value" id="val-act" style="font-size: 18px;">N/A</div>
+            </div>
+            <div class="gauge-box" style="width: 135px; height: 135px;">
+                <div class="gauge-title">COOLANT (ECT/EOT)</div>
+                <div class="gauge-value" id="val-ect" style="font-size: 18px;">N/A</div>
+            </div>
+            <div class="gauge-box" style="width: 135px; height: 135px;">
+                <div class="gauge-title">LAMBDA (LAM 1/2)</div>
+                <div class="gauge-value" id="val-lam" style="font-size: 18px;">N/A</div>
+            </div>
+            <div class="gauge-box" style="width: 135px; height: 135px;">
+                <div class="gauge-title">BARO PRESS (BAP)</div>
+                <div class="gauge-value" id="val-bap" style="font-size: 18px;">N/A</div>
+            </div>
+        </div>
+
+        <!-- Desktop Bottom Panel: Safety, Engine Stats & All Fans -->
+        <div class="bottom-panel">
+            <div class="section-block">
+                <h3>ENGINE SAFETY / STATUS</h3>
+                <div class="led-grid">
+                    <div class="led-item"><div class="led-circle" id-led="knockstatus"></div>Knock</div>
+                    <div class="led-item"><div class="led-circle" id-led="wgcstrategyactive"></div>Wastegate</div>
+                    <div class="led-item"><div class="led-circle" id-led="alsstate"></div>ALS</div>
+                    <div class="led-item"><div class="led-circle" id-led="limpmode"></div>Limp Mode</div>
+                    <div class="led-item"><div class="led-circle" id-led="dbw1err"></div>DBW Err</div>
+                    <div class="led-item"><div class="led-circle" id="FuelPump" style="margin: 0 auto 4px auto;"></div>Fuel Pump</div>
+                </div>
+            </div>
+
+            <div class="section-block">
+                <h3>ADVANCED ENGINE STATS</h3>
+                <div class="stats-section-content" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 13px; padding: 8px;">
+                    <div>Crankcase P (CCP): <span id="val-ccp" style="font-weight: bold;">N/A</span></div>
+                    <div>Exhaust Gas (EGT): <span id="val-egt" style="font-weight: bold;">N/A</span></div>
+                    <div>Fuel Multiplier: <span id="val-fuelmlt" style="font-weight: bold;">N/A</span></div>
+                    <div>Fuel Temp (FT): <span id="val-ft" style="font-weight: bold;">N/A</span></div>
+                </div>
+            </div>
+
+            <div class="section-block">
+                <h3>COOLING FANS DUTY</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 5px; font-size: 12px; text-align: center;">
+                    <div style="background: rgba(0,0,0,0.03); border: 1px solid #ced4da; border-radius: 4px; padding: 6px;">
+                        <div style="color: #6c757d; font-size: 10px;">FAN 3 DUTY</div>
+                        <div id="val-fan3" style="font-size: 15px; font-weight: bold; margin-top: 2px;">N/A</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.03); border: 1px solid #ced4da; border-radius: 4px; padding: 6px;">
+                        <div style="color: #6c757d; font-size: 10px;">FAN 6 DUTY</div>
+                        <div id="val-fan6" style="font-size: 15px; font-weight: bold; margin-top: 2px;">N/A</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.03); border: 1px solid #ced4da; border-radius: 4px; padding: 6px;">
+                        <div style="color: #6c757d; font-size: 10px;">FAN 7 DUTY</div>
+                        <div id="val-fan7" style="font-size: 15px; font-weight: bold; margin-top: 2px;">N/A</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.03); border: 1px solid #ced4da; border-radius: 4px; padding: 6px;">
+                        <div style="color: #6c757d; font-size: 10px;">FAN 8 DUTY</div>
+                        <div id="val-fan8" style="font-size: 15px; font-weight: bold; margin-top: 2px;">N/A</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SMALL / MOBILE LOOK                        -->
+    <!-- ========================================== -->
+    <div class="mobile-layout">
+        <!-- 1. Gauges Grid (Left Column) -->
+        <div class="mobile-gauges-grid">
+            <div class="gauge-box">
+                <div class="gauge-title">RPM</div>
+                <div class="gauge-value" id="m-val-rpm">N/A</div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">MAP 1/2</div>
+                <div class="gauge-value" id="m-val-map">N/A</div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">TURBO SP</div>
+                <div class="gauge-value" id="m-val-turbospeed">N/A</div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">FUEL P</div>
+                <div class="gauge-value" id="m-val-relfp">N/A</div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">OIL P (EOP)</div>
+                <div class="gauge-value" id="m-val-eop">N/A</div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">AIR TEMP</div>
+                <div class="gauge-value" id="m-val-act">N/A</div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">COOLANT</div>
+                <div class="gauge-value" id="m-val-ect">N/A</div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">LAMBDA</div>
+                <div class="gauge-value" id="m-val-lam">N/A</div>
+            </div>
+
+            <div class="gauge-box">
+                <div class="gauge-title">BARO PRESS</div>
+                <div class="gauge-value" id="m-val-bap">N/A</div>
+            </div>
+        </div>
+
+        <!-- 2. Mobile Right Panel (Safety, Advanced Stats & Cooling Fans) -->
+        <div class="mobile-right-panel">
+            <div class="bottom-panel">
+                <div class="section-block" style="margin-bottom: 0;">
+                    <h3>ENGINE SAFETY</h3>
+                    <div class="led-grid">
+                        <div class="led-item"><div class="led-circle" id-led="knockstatus"></div>Knock</div>
+                        <div class="led-item"><div class="led-circle" id-led="wgcstrategyactive"></div>Wastegate</div>
+                        <div class="led-item"><div class="led-circle" id-led="alsstate"></div>ALS</div>
+                        <div class="led-item"><div class="led-circle" id-led="limpmode"></div>Limp</div>
+                        <div class="led-item"><div class="led-circle" id-led="dbw1err"></div>DBW Err</div>
+                        <div class="led-item"><div class="led-circle" id="FuelPump" style="margin: 0 auto 2px auto;"></div>Pump</div>
+                    </div>
+                </div>
+
+                <div class="section-block" style="margin-bottom: 0;">
+                    <h3>ADVANCED STATS</h3>
+                    <div style="font-size: clamp(8px, 1.4vh, 10px); display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; text-align: center;">
+                        <div>CCP: <span id="m-val-ccp" style="font-weight: bold;">N/A</span></div>
+                        <div>EGT: <span id="m-val-egt" style="font-weight: bold;">N/A</span></div>
+                        <div>Mlt: <span id="m-val-fuelmlt" style="font-weight: bold;">N/A</span></div>
+                        <div>FT: <span id="m-val-ft" style="font-weight: bold;">N/A</span></div>
+                    </div>
+                </div>
+
+                <div class="section-block" style="margin-bottom: 0;">
+                    <h3>COOLING FANS</h3>
+                    <div style="font-size: clamp(8px, 1.4vh, 10px); display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; text-align: center;">
+                        <div style="background: rgba(0,0,0,0.03); border: 1px solid #ced4da; border-radius: 3px; padding: 2px;">
+                            <div>FAN 3: <span id="m-val-fan3" style="font-weight: bold;">N/A</span></div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.03); border: 1px solid #ced4da; border-radius: 3px; padding: 2px;">
+                            <div>FAN 6: <span id="m-val-fan6" style="font-weight: bold;">N/A</span></div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.03); border: 1px solid #ced4da; border-radius: 3px; padding: 2px;">
+                            <div>FAN 7: <span id="m-val-fan7" style="font-weight: bold;">N/A</span></div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.03); border: 1px solid #ced4da; border-radius: 3px; padding: 2px;">
+                            <div>FAN 8: <span id="m-val-fan8" style="font-weight: bold;">N/A</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const events = new EventSource("/live?stream=1");
+    const statusBanner = document.getElementById("status-banner");
+
+    events.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+        if (data.status) {
+            statusBanner.style.display = "block";
+            statusBanner.textContent = data.status;
+            return;
+        } else {
+            statusBanner.style.display = "none";
+        }
+
+        function findValue(obj, targetKeys) {
+            if (!Array.isArray(targetKeys)) targetKeys = [targetKeys];
+            for (let targetKey of targetKeys) {
+                const lowerTarget = targetKey.toLowerCase();
+                for (let key of Object.keys(obj)) {
+                    if (key.toLowerCase() === lowerTarget || 
+                        key.toLowerCase().replace(/[_]/g, "") === lowerTarget.replace(/[_]/g, "")) {
+                        return obj[key];
+                    }
+                }
+            }
+            for (let targetKey of targetKeys) {
+                const lowerTarget = targetKey.toLowerCase();
+                for (let key of Object.keys(obj)) {
+                    if (key.toLowerCase().includes(lowerTarget) || lowerTarget.includes(key.toLowerCase())) {
+                        return obj[key];
+                    }
+                }
+            }
+            return undefined;
+        }
+
+        function formatNumber(val) {
+            if (val === undefined || val === null || val === "") return "N/A";
+            const num = Number(val);
+            if (isNaN(num)) return val;
+            return Number.isInteger(num) ? num : num.toFixed(2);
+        }
+
+        function updateFieldPair(baseId, targetKeys, unit = "", prefix = "") {
+            const val = findValue(data, targetKeys);
+            if (val === undefined || val === null) return;
+
+            const formatted = formatNumber(val);
+            const displayVal = (formatted !== "N/A") ? (prefix + formatted + unit) : (prefix + "N/A");
+            
+            const desktopEl = document.getElementById(baseId);
+            const mobileEl = document.getElementById("m-" + baseId);
+            
+            if (desktopEl) desktopEl.textContent = displayVal;
+            if (mobileEl) mobileEl.textContent = displayVal;
+        }
+
+        // Core Engine Mapping
+        updateFieldPair("val-rpm", ["EngineRPM", "enginerpm", "rpm"]);
+        updateFieldPair("val-pps", ["ppsDriver", "ppsdriver", "throttlepos", "throttle"], "%");
+        updateFieldPair("val-vbat", ["vbat", "batteryvoltage", "voltage"], " V");
+        
+        // Pressures & Turbo
+        const mapVal1 = formatNumber(findValue(data, ["map1"]));
+        const mapVal2 = formatNumber(findValue(data, ["map2"]));
+        if (mapVal1 !== "N/A" || mapVal2 !== "N/A") {
+            const combinedMap = `${mapVal1} / ${mapVal2}`;
+            ['val-map', 'm-val-map'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = combinedMap; });
+        }
+
+        const turbo1 = formatNumber(findValue(data, ["turboSpeed1Despiked", "turbospeed1despiked"]));
+        const turbo2 = formatNumber(findValue(data, ["turboSpeed2Despiked", "turbospeed2despiked"]));
+        if (turbo1 !== "N/A" || turbo2 !== "N/A") {
+            const combinedTurbo = `${turbo1} / ${turbo2}`;
+            ['val-turbospeed', 'm-val-turbospeed'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = combinedTurbo; });
+        }
+
+        const relfp1 = formatNumber(findValue(data, ["relFp1", "relfp1"]));
+        const relfp2 = formatNumber(findValue(data, ["relFp2", "relfp2"]));
+        if (relfp1 !== "N/A" || relfp2 !== "N/A") {
+            const combinedRelfp = `${relfp1} / ${relfp2}`;
+            ['val-relfp', 'm-val-relfp'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = combinedRelfp; });
+        }
+
+        updateFieldPair("val-eop", ["eop1", "eop", "oilpressure"], " bar");
+        updateFieldPair("val-act", ["act1", "act2", "airtemp"], "°C");
+        updateFieldPair("val-ect", ["ect1", "ect2", "engtemp", "eot"], "°C");
+
+        const lam1 = formatNumber(findValue(data, ["lam1"]));
+        const lam2 = formatNumber(findValue(data, ["lam2"]));
+        if (lam1 !== "N/A" || lam2 !== "N/A") {
+            const combinedLam = `${lam1} / ${lam2}`;
+            ['val-lam', 'm-val-lam'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = combinedLam; });
+        }
+
+        updateFieldPair("val-bap", ["bap", "baropressure"], " bar");
+        updateFieldPair("val-ccp", ["ccp1", "ccp2"], " bar");
+        updateFieldPair("val-egt", ["egt1", "egt2"], "°C");
+        updateFieldPair("val-fuelmlt", ["fuelMltCll1", "fuelmltcll1"]);
+        updateFieldPair("val-ft", ["ft1", "fueltemp"], "°C");
+        updateFieldPair("val-fan3", ["fan3Duty", "fan3duty"], "%");
+        updateFieldPair("val-fan6", ["fan6Duty", "fan6duty"], "%");
+        updateFieldPair("val-fan7", ["fan7Duty", "fan7duty"], "%");
+        updateFieldPair("val-fan8", ["fan8Duty", "fan8duty"], "%");
+
+        // Throttle & Brake bars
+        const tValRaw = findValue(data, ["ppsDriver", "throttle", "throttlepos"]);
+        if (tValRaw !== undefined && tValRaw !== null) {
+            let tVal = Number(tValRaw);
+            if (tVal <= 1) tVal = tVal * 100;
+            const tPercent = Math.min(Math.max(tVal, 0), 100).toFixed(2) + "%";
+            document.getElementById("throttle-fill").style.width = tPercent;
+        }
+
+        const bValRaw = findValue(data, ["bpf", "brake", "brakepos"]);
+        if (bValRaw !== undefined && bValRaw !== null) {
+            let bVal = Number(bValRaw);
+            if (bVal <= 1) bVal = bVal * 100;
+            const bPercent = Math.min(Math.max(bVal, 0), 100).toFixed(2) + "%";
+            document.getElementById("brake-fill").style.width = bPercent;
+        }
+
+        // LED States (Engine warnings/statuses)
+        const engineLeds = ["knockstatus", "wgcstrategyactive", "alsstate", "limpmode", "dbw1err"];
+        engineLeds.forEach(led => {
+            const el = document.querySelectorAll(`[id-led="${led}"]`);
+            el.forEach(e => {
+                const val = findValue(data, [led]);
+                if (val !== undefined) {
+                    if (Number(val) === 1 || val === true) {
+                        e.classList.add("active");
+                    } else {
+                        e.classList.remove("active");
+                    }
+                }
+            });
+        });
+
+        const pumpVal = findValue(data, ["FuelPump", "fuel_pump", "fuelpump1"]);
+        const pumpEls = document.querySelectorAll("#FuelPump");
+        pumpEls.forEach(pumpEl => {
+            if (pumpEl && pumpVal !== undefined) {
+                if (Number(pumpVal) === 1) {
+                    pumpEl.classList.add("active");
+                } else {
+                    pumpEl.classList.remove("active");
+                }
+            }
+        });
+    };
+
+    events.onerror = function() {
+        statusBanner.style.display = "block";
+        statusBanner.textContent = "Live connection lost. Reconnecting...";
+    };
+</script>
 {% endblock %}
