@@ -8,7 +8,7 @@
 <h1>Live Graph Data Page</h1>
 
 <!--
-    This div is used to display the most recent vehicle data
+    This div is used to display the most recent vehicle data status
     received from the Flask server.
 -->
 <div id="vehicle-data">
@@ -92,7 +92,7 @@ const unshowAllBtn =
 const graphsContainer =
     document.getElementById("graphs");
 
-// Get the element used to display the latest vehicle data.
+// Get the element used to display status/waiting messages.
 const vehicleData =
     document.getElementById("vehicle-data");
 
@@ -292,7 +292,8 @@ function getCategoryForKey(key) {
         lower.includes("volt") ||
         lower.includes("battery") ||
         lower.includes("current") ||
-        lower.includes("power")
+        lower.includes("power") ||
+        lower.includes("pdu")
     ) {
         return "Electrical";
     } else {
@@ -428,8 +429,12 @@ function addGraphOption(key) {
             graphOptions.appendChild(groupWrapper);
         }
 
-        // Event listener for the group's "Show Group" toggle with max 20 limit enforcement
+        // Event listener for the group's "Show Group" toggle with debounce/lock to prevent freezing
+        let isToggling = false;
         groupToggleCheckbox.addEventListener("change", function() {
+            if (isToggling) return;
+            isToggling = true;
+
             const checkboxesInGroup = Array.from(groupContainer.querySelectorAll("input[id^='graph-option-']"));
             
             if (this.checked) {
@@ -442,6 +447,7 @@ function addGraphOption(key) {
                     alert("Maximum limit of 20 graphs already reached.");
                     this.checked = false;
                     updateGroupToggleState(catId);
+                    isToggling = false;
                     return;
                 }
 
@@ -465,6 +471,10 @@ function addGraphOption(key) {
             updateGraphs();
             updateGroupToggleState(catId);
             updateActiveGraphsCounter();
+
+            setTimeout(() => {
+                isToggling = false;
+            }, 100);
         });
     }
 
@@ -1093,26 +1103,18 @@ events.onmessage =
                 event.data
             );
 
-        // Clear the previous vehicle data from the page.
-        vehicleData.innerHTML = "";
+        // Update status text or handle waiting message
+        if (data.status) {
+            vehicleData.textContent = data.status;
+        } else {
+            vehicleData.textContent = "";
+        }
 
         // Loop through every key/value pair received.
         for (
             const [key, value]
             of Object.entries(data)
         ) {
-
-            const row =
-                document.createElement("p");
-
-            if (key === "status") {
-                row.textContent = value;
-            } else {
-                row.textContent =
-                    key + ": " + value;
-            }
-
-            vehicleData.appendChild(row);
 
             const numericValue = getNumericValue(value);
             const lowerKey = key.toLowerCase();
@@ -1153,6 +1155,7 @@ events.onerror =
         console.log(
             "Live connection lost. Browser will retry..."
         );
+        vehicleData.textContent = "Waiting for data to recommence...";
     };
 
 </script>
