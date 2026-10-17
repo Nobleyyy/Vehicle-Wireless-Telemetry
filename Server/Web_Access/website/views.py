@@ -65,6 +65,16 @@ def live_graph():
     )
 
 
+@views.route("/live-raw")
+@login_required
+def live_raw():
+    # Display live raw page
+    return render_template(
+        "live-raw.html",
+        user=current_user
+    )
+
+
 @views.route("/database")
 @login_required
 def database():
