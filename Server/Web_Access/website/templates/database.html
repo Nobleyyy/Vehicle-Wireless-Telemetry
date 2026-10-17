@@ -4,18 +4,48 @@
 
 {% block content %}
 
-<!-- Main heading displayed on the database page -->
-<h1>Database Page</h1>
-
 <style>
 
     /* ========================================
-       GENERAL DATABASE LAYOUT
+       BREAK OUT OF BASE.HTML & HARD LEFT ALIGN
        ======================================== */
 
-    .database-container {
+    html, body {
         width: 100%;
         max-width: 100%;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+    }
+
+    .database-container {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        padding: 0 30px;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .database-container h1.page-title {
+        width: 100% !important;
+        text-align: left !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        display: block !important;
+    }
+
+    #tableTitle,
+    .table-selector,
+    .no-data {
+        width: 100%;
+        text-align: left;
     }
 
     .no-data {
@@ -105,8 +135,13 @@
         align-items: center;
         gap: 10px;
         margin-top: 15px;
+        margin-bottom: 30px;
         font-size: 14px;
         color: #333;
+        position: sticky;
+        left: 0;
+        width: max-content;
+        z-index: 4;
     }
 
     html[data-theme="dark"] .bottom-pagination {
@@ -145,14 +180,17 @@
 
 
     /* ========================================
-       TABLE WRAPPER
+       TABLE WRAPPER (Full Screen Width Stretch)
        ======================================== */
 
     .table-wrapper {
         width: 100%;
         max-width: 100%;
-        overflow: hidden;
-        padding-bottom: 30px;
+        max-height: 65vh;
+        display: block;
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
 
@@ -162,9 +200,10 @@
 
     #dataTable {
         width: 100%;
-        max-width: 100%;
-        table-layout: fixed;
-        border-collapse: collapse;
+        min-width: max-content;
+        table-layout: auto;
+        border-collapse: separate;
+        border-spacing: 0;
         font-size: 14px;
     }
 
@@ -172,19 +211,72 @@
     #dataTable td {
         padding: 6px 8px;
         border: 1px solid #ddd;
+        border-top: none;
+        border-left: none;
         text-align: left;
         overflow-wrap: anywhere;
         word-break: break-word;
         white-space: normal;
     }
 
+    #dataTable th:first-child,
+    #dataTable td:first-child {
+        border-left: 1px solid #ddd;
+    }
+
+    #dataTable tr:first-child th {
+        border-top: 1px solid #ddd;
+    }
+
     #dataTable th {
         background-color: #333;
         color: white;
+        position: sticky;
+        top: 0;
+        z-index: 4;
     }
 
-    #dataTable tr:nth-child(even) {
+    #dataTable tr:nth-child(even) td {
         background-color: #f5f5f5;
+    }
+
+    #dataTable tr:nth-child(odd) td {
+        background-color: #ffffff;
+    }
+
+    /* Sticky first two columns (id and timestamp) with tight widths */
+    #dataTable th:nth-child(1),
+    #dataTable td:nth-child(1) {
+        position: sticky;
+        left: 0;
+        width: 40px;
+        min-width: 40px;
+        max-width: 40px;
+        white-space: nowrap;
+        background-color: inherit;
+    }
+
+    #dataTable th:nth-child(2),
+    #dataTable td:nth-child(2) {
+        position: sticky;
+        left: 40px;
+        width: 125px;
+        min-width: 125px;
+        max-width: 125px;
+        white-space: nowrap;
+        background-color: inherit;
+    }
+
+    /* Intersection of sticky header and sticky columns needs highest z-index */
+    #dataTable th:nth-child(1),
+    #dataTable th:nth-child(2) {
+        background-color: #333;
+        z-index: 5;
+    }
+
+    #dataTable td:nth-child(1),
+    #dataTable td:nth-child(2) {
+        z-index: 2;
     }
 
 
@@ -207,12 +299,20 @@
     }
 
     html[data-theme="dark"] #dataTable td {
-        background-color: #555;
         color: #e0e0e0;
+    }
+
+    html[data-theme="dark"] #dataTable tr:nth-child(odd) td {
+        background-color: #555;
     }
 
     html[data-theme="dark"] #dataTable tr:nth-child(even) td {
         background-color: #606060;
+    }
+
+    html[data-theme="dark"] #dataTable th:nth-child(1),
+    html[data-theme="dark"] #dataTable th:nth-child(2) {
+        background-color: #333;
     }
 
 
@@ -245,6 +345,9 @@
 
 
 <div class="database-container">
+
+    <!-- Main heading placed inside container override -->
+    <h1 class="page-title">Database Page</h1>
 
     {% if tables %}
 
@@ -304,13 +407,13 @@
             <tbody id="tableBody"></tbody>
         </table>
 
-        <!-- Bottom Page Left, Page Indicator (Page n/total), and Page Right -->
-        <div id="bottomPagination" class="bottom-pagination" style="display: none;">
-            <button id="pageLeftBtnBottom" class="page-nav-btn" type="button">&lt;</button>
-            <span id="pageIndicator">Page 1/1</span>
-            <button id="pageRightBtnBottom" class="page-nav-btn" type="button">&gt;</button>
-        </div>
+    </div>
 
+    <!-- Bottom Page Left, Page Indicator (Page n/total), and Page Right -->
+    <div id="bottomPagination" class="bottom-pagination" style="display: none;">
+        <button id="pageLeftBtnBottom" class="page-nav-btn" type="button">&lt;</button>
+        <span id="pageIndicator">Page 1/1</span>
+        <button id="pageRightBtnBottom" class="page-nav-btn" type="button">&gt;</button>
     </div>
 
 </div>
