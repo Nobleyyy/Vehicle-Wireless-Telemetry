@@ -26,40 +26,28 @@
     </div>
 
     <!--
-        JavaScript dynamically adds checkboxes here.
-        Each checkbox represents a field that can be graphed.
+        Active Graphs counter, Unshow All button with rounded corners, and Show points toggle in line.
     -->
-    <div id="graph-options" style="margin-top: 8px;">
-    </div>
-
-    <div style="margin-top: 10px;">
-
-        <!--
-            Allows the user to show or hide the individual
-            data points displayed on the graphs.
-        -->
-        <label style="margin-right: 15px;">
+    <div style="margin-top: 8px; margin-bottom: 15px; display: flex; align-items: baseline;">
+        <span id="active-graphs-counter" style="font-weight: normal; font-size: 14px; margin-right: 20px;">Active Graphs (0/20)</span>
+        <button id="unshow-all-btn" style="margin-right: 25px; cursor: pointer; padding: 3px 10px; font-size: 13px; border-radius: 6px; border: 1px solid #ccc; background-color: #f8f9fa; color: #333;">Unshow All</button>
+        <label style="display: inline-flex; align-items: center; cursor: pointer;">
             <input
                 type="checkbox"
                 id="points-toggle"
                 checked
+                style="margin-right: 4px;"
             >
             Show points
         </label>
-
-        <!--
-            Allows the user to select or deselect all
-            available graph options at once.
-        -->
-        <label>
-            <input
-                type="checkbox"
-                id="toggle-all"
-            >
-            Toggle all
-        </label>
-
     </div>
+
+    <!--
+        JavaScript dynamically adds categorized groups and checkboxes here.
+    -->
+    <div id="graph-options" style="margin-top: 8px;">
+    </div>
+
 </div>
 
 <!--
@@ -92,9 +80,13 @@ const graphOptions =
 const pointsToggle =
     document.getElementById("points-toggle");
 
-// Get the checkbox used to select or deselect all graphs.
-const toggleAll =
-    document.getElementById("toggle-all");
+// Get the active graphs counter element.
+const activeGraphsCounter =
+    document.getElementById("active-graphs-counter");
+
+// Get the Unshow All button element.
+const unshowAllBtn =
+    document.getElementById("unshow-all-btn");
 
 // Get the container where the actual graphs will be displayed.
 const graphsContainer =
@@ -176,9 +168,17 @@ function getNumericValue(value) {
     if (
         value === null ||
         value === "" ||
-        value === undefined
+        value === undefined ||
+        typeof value === "boolean"
     ) {
         return null;
+    }
+
+    if (typeof value === "string") {
+        const trimmed = value.trim().toLowerCase();
+        if (trimmed === "on" || trimmed === "off" || trimmed === "true" || trimmed === "false" || isNaN(Number(trimmed))) {
+            return null;
+        }
     }
 
     // Convert the value into a JavaScript number.
@@ -252,13 +252,108 @@ function applyPointVisibility(chart) {
 
 
 // ========================================
+// Categorize Graph Fields
+// ========================================
+
+function getCategoryForKey(key) {
+    const lower = key.toLowerCase();
+    if (
+        lower.includes("rpm") ||
+        lower.includes("temp") ||
+        lower.includes("oil") ||
+        lower.includes("coolant") ||
+        lower.includes("fuel") ||
+        lower.includes("boost") ||
+        lower.includes("throttle") ||
+        lower.includes("pressure") ||
+        lower.includes("turbo") ||
+        lower.includes("lambda") ||
+        lower.includes("afr") ||
+        lower.includes("clutch")
+    ) {
+        return "Engine";
+    } else if (
+        lower.includes("gear") ||
+        lower.includes("paddle") ||
+        lower.includes("shift")
+    ) {
+        return "Gearing";
+    } else if (
+        lower.includes("speed") ||
+        lower.includes("brake") ||
+        lower.includes("steering") ||
+        lower.includes("accel") ||
+        lower.includes("velocity") ||
+        lower.includes("lat") ||
+        lower.includes("lon")
+    ) {
+        return "Vehicle";
+    } else if (
+        lower.includes("volt") ||
+        lower.includes("battery") ||
+        lower.includes("current") ||
+        lower.includes("power")
+    ) {
+        return "Electrical";
+    } else {
+        return "Other";
+    }
+}
+
+// Predefined fixed order of categories (Electrical placed before Other)
+const categoryOrder = ["Engine", "Vehicle", "Electrical", "Gearing", "Other"];
+
+// ========================================
+// Update Active Graphs Counter
+// ========================================
+
+function updateActiveGraphsCounter() {
+    const checkedCount = graphOptions.querySelectorAll("input[id^='graph-option-']:checked").length;
+    if (activeGraphsCounter) {
+        activeGraphsCounter.textContent = `Active Graphs (${checkedCount}/20)`;
+    }
+}
+
+
+// ========================================
+// Unshow All Button Listener
+// ========================================
+
+unshowAllBtn.addEventListener("click", function() {
+    const allCheckboxes = graphOptions.querySelectorAll("input[id^='graph-option-']");
+    allCheckboxes.forEach(cb => {
+        cb.checked = false;
+    });
+
+    // Also uncheck all group toggle checkboxes
+    categoryOrder.forEach(cat => {
+        const groupToggle = document.getElementById("group-toggle-" + cat.toLowerCase());
+        if (groupToggle) {
+            groupToggle.checked = false;
+        }
+    });
+
+    updateGraphs();
+    updateActiveGraphsCounter();
+});
+
+
+// ========================================
 // Add graph checkbox
 // ========================================
 
 function addGraphOption(key) {
 
+    // Hard block any field named "on", "off", "id", or "status"
+    const lowerKey = key.toLowerCase();
+    if (lowerKey === "on" || lowerKey === "off" || key === "id" || lowerKey === "status") {
+        if (charts[key]) {
+            removeGraph(key);
+        }
+        return;
+    }
+
     // Check whether a checkbox for this field already exists.
-    // This prevents duplicate checkboxes being created.
     if (
         document.getElementById(
             "graph-option-" + key
@@ -267,66 +362,168 @@ function addGraphOption(key) {
         return;
     }
 
+    // Determine category and container
+    const category = getCategoryForKey(key);
+    const catId = category.toLowerCase();
+    let groupContainer = document.getElementById("group-container-" + catId);
+    let groupWrapper = document.getElementById("group-wrapper-" + catId);
+
+    if (!groupContainer) {
+        groupWrapper = document.createElement("div");
+        groupWrapper.id = "group-wrapper-" + catId;
+        groupWrapper.style.marginBottom = "15px";
+
+        // Group Title & Inline Show Group toggle layout with baseline alignment
+        const groupHeader = document.createElement("div");
+        groupHeader.style.display = "flex";
+        groupHeader.style.alignItems = "baseline";
+        groupHeader.style.marginBottom = "5px";
+
+        const groupTitle = document.createElement("span");
+        groupTitle.innerHTML = `<strong>${category}</strong>`;
+        groupTitle.style.fontSize = "14px";
+        groupTitle.style.textTransform = "uppercase";
+        groupTitle.style.color = "inherit";
+        groupTitle.style.marginRight = "15px";
+
+        const groupToggleLabel = document.createElement("label");
+        groupToggleLabel.style.fontSize = "13px";
+        groupToggleLabel.style.cursor = "pointer";
+        groupToggleLabel.style.display = "inline-flex";
+        groupToggleLabel.style.alignItems = "center";
+
+        const groupToggleCheckbox = document.createElement("input");
+        groupToggleCheckbox.type = "checkbox";
+        groupToggleCheckbox.id = "group-toggle-" + catId;
+        groupToggleCheckbox.style.marginRight = "4px";
+
+        groupToggleLabel.appendChild(groupToggleCheckbox);
+        groupToggleLabel.appendChild(document.createTextNode("Show Group"));
+
+        groupHeader.appendChild(groupTitle);
+        groupHeader.appendChild(groupToggleLabel);
+        groupWrapper.appendChild(groupHeader);
+
+        groupContainer = document.createElement("div");
+        groupContainer.id = "group-container-" + catId;
+        groupContainer.style.marginLeft = "10px";
+        groupWrapper.appendChild(groupContainer);
+
+        // Insert wrapper in correct sorted order based on categoryOrder
+        const existingWrappers = graphOptions.children;
+        let inserted = false;
+        const targetIndex = categoryOrder.indexOf(category);
+
+        for (let i = 0; i < existingWrappers.length; i++) {
+            const currentCatId = existingWrappers[i].id.replace("group-wrapper-", "");
+            const currentCatName = currentCatId.charAt(0).toUpperCase() + currentCatId.slice(1);
+            if (categoryOrder.indexOf(currentCatName) > targetIndex) {
+                graphOptions.insertBefore(groupWrapper, existingWrappers[i]);
+                inserted = true;
+                break;
+            }
+        }
+
+        if (!inserted) {
+            graphOptions.appendChild(groupWrapper);
+        }
+
+        // Event listener for the group's "Show Group" toggle with max 20 limit enforcement
+        groupToggleCheckbox.addEventListener("change", function() {
+            const checkboxesInGroup = Array.from(groupContainer.querySelectorAll("input[id^='graph-option-']"));
+            
+            if (this.checked) {
+                const checkedOutsideGroup = Array.from(graphOptions.querySelectorAll("input[id^='graph-option-']:checked"))
+                    .filter(cb => !checkboxesInGroup.includes(cb)).length;
+                
+                const allowedForThisGroup = 20 - checkedOutsideGroup;
+
+                if (allowedForThisGroup <= 0) {
+                    alert("Maximum limit of 20 graphs already reached.");
+                    this.checked = false;
+                    updateGroupToggleState(catId);
+                    return;
+                }
+
+                if (checkboxesInGroup.length > allowedForThisGroup) {
+                    alert(`Group has more than available slots. Selecting the first ${allowedForThisGroup} to reach the 20 graph limit.`);
+                }
+
+                checkboxesInGroup.forEach(cb => cb.checked = false);
+
+                checkboxesInGroup.forEach((cb, index) => {
+                    if (index < allowedForThisGroup) {
+                        cb.checked = true;
+                    }
+                });
+            } else {
+                checkboxesInGroup.forEach(cb => {
+                    cb.checked = false;
+                });
+            }
+
+            updateGraphs();
+            updateGroupToggleState(catId);
+            updateActiveGraphsCounter();
+        });
+    }
+
+    // Create a wrapper container for the checkbox and label to keep them together on line wraps
+    const itemWrapper = document.createElement("span");
+    itemWrapper.style.display = "inline-block";
+    itemWrapper.style.marginRight = "15px";
+    itemWrapper.style.whiteSpace = "nowrap";
+
     // Create a new checkbox input element.
     const checkbox =
         document.createElement("input");
 
-    // Set the element type to checkbox.
     checkbox.type = "checkbox";
-
-    // Give the checkbox a unique ID based on the field name.
-    checkbox.id =
-        "graph-option-" + key;
-
-    // Store the field name as the checkbox value.
+    checkbox.id = "graph-option-" + key;
     checkbox.value = key;
-
+    checkbox.className = "group-cb-" + catId;
 
     // Create a label for the checkbox.
     const label =
         document.createElement("label");
 
-    // Connect the label to the checkbox.
-    label.htmlFor =
-        checkbox.id;
-
-    // Display the field name next to the checkbox.
+    label.htmlFor = checkbox.id;
     label.textContent = key;
-
-    // Add spacing between the checkbox and its label.
     label.style.marginLeft = "5px";
-
-    // Add spacing between this option and the next option.
-    label.style.marginRight = "15px";
-
-    // Make each label appear as an inline-block.
     label.style.display = "inline-block";
+    label.style.color = getGraphColor(key);
 
-    // Give the label the same colour as its graph.
-    label.style.color =
-        getGraphColor(key);
+    itemWrapper.appendChild(checkbox);
+    itemWrapper.appendChild(label);
 
+    // Add item wrapper to the specific category container
+    groupContainer.appendChild(itemWrapper);
 
-    // Add the checkbox to the graph options container.
-    graphOptions.appendChild(
-        checkbox
-    );
-
-    // Add the label immediately after the checkbox.
-    graphOptions.appendChild(
-        label
-    );
+    // Ensure category wrapper is visible now that it has at least one option
+    if (groupWrapper) {
+        groupWrapper.style.display = "block";
+    }
 
     // When the checkbox changes, update the graphs.
     checkbox.addEventListener(
         "change",
         function() {
 
+            // Enforce maximum of 20 checked options at once
+            const checkedBoxes = graphOptions.querySelectorAll("input[id^='graph-option-']:checked");
+            if (checkedBoxes.length > 20) {
+                this.checked = false;
+                alert("You can select a maximum of 20 graphs at the same time.");
+            }
+
             // Create/remove graphs based on the selected options.
             updateGraphs();
 
-            // Update the state of the "Toggle all" checkbox.
-            updateToggleAllState();
+            // Update individual group toggle state
+            updateGroupToggleState(catId);
+
+            // Update active graphs counter
+            updateActiveGraphsCounter();
 
         }
     );
@@ -339,10 +536,34 @@ function addGraphOption(key) {
 
 
 // ========================================
+// Update Group Toggle State
+// ========================================
+
+function updateGroupToggleState(catId) {
+    const groupContainer = document.getElementById("group-container-" + catId);
+    const groupToggle = document.getElementById("group-toggle-" + catId);
+    if (!groupContainer || !groupToggle) return;
+
+    const checkboxes = Array.from(groupContainer.querySelectorAll("input[id^='graph-option-']"));
+    if (checkboxes.length === 0) {
+        groupToggle.checked = false;
+        return;
+    }
+
+    groupToggle.checked = checkboxes.every(cb => cb.checked);
+}
+
+
+// ========================================
 // Create graph
 // ========================================
 
 function createGraph(key) {
+
+    const lowerKey = key.toLowerCase();
+    if (lowerKey === "on" || lowerKey === "off" || key === "id" || lowerKey === "status") {
+        return;
+    }
 
     // If the graph already exists, do not create another one.
     if (charts[key]) {
@@ -573,51 +794,21 @@ function removeGraph(key) {
 
 
 // ========================================
-// Toggle all graphs
-// ========================================
-
-function updateToggleAllState() {
-
-    // Find every graph-selection checkbox.
-    const checkboxes =
-        Array.from(
-            graphOptions.querySelectorAll(
-                "input[type='checkbox']"
-            )
-        );
-
-    // If there are no graph options yet,
-    // make sure "Toggle all" is unchecked.
-    if (checkboxes.length === 0) {
-        toggleAll.checked = false;
-        return;
-    }
-
-    // "Toggle all" is checked only if every graph checkbox
-    // is currently checked.
-    toggleAll.checked =
-        checkboxes.every(
-            checkbox => checkbox.checked
-        );
-}
-
-
-// ========================================
 // Update graphs
 // ========================================
 
 function updateGraphs() {
 
-    // Get the names of all currently selected graph fields.
+    // Get the names of all currently selected graph fields, capped at 20.
     const selectedFields =
         Array.from(
             graphOptions.querySelectorAll(
-                "input[type='checkbox']:checked"
+                "input[id^='graph-option-']:checked"
             )
         ).map(
             checkbox =>
                 checkbox.value
-        );
+        ).slice(0, 20);
 
 
     // ====================================
@@ -880,45 +1071,10 @@ pointsToggle.addEventListener("change", function () {
 
 
 // ========================================
-// Show toggle all
-// ========================================
-
-toggleAll.addEventListener(
-    "change",
-    function() {
-
-        // Find all graph-selection checkboxes.
-        const checkboxes =
-            graphOptions.querySelectorAll(
-                "input[type='checkbox']"
-            );
-
-        // Set every graph checkbox to match
-        // the "Toggle all" checkbox.
-        checkboxes.forEach(
-            checkbox => {
-
-                checkbox.checked =
-                    this.checked;
-
-            }
-        );
-
-        // Create or remove graphs based on the new selections.
-        updateGraphs();
-
-    }
-);
-
-
-// ========================================
 // Connect to Flask SSE stream
 // ========================================
 
 // Create an EventSource connection to the Flask endpoint.
-//
-// EventSource is used to receive Server-Sent Events (SSE)
-// from the server without repeatedly making normal requests.
 const events =
     new EventSource(
         "/live?stream=1"
@@ -929,25 +1085,16 @@ const events =
 // Receive live data
 // ========================================
 
-// This function runs whenever a new SSE message arrives.
 events.onmessage =
     function(event) {
 
-        // Convert the JSON message received from Flask
-        // into a JavaScript object.
         const data =
             JSON.parse(
                 event.data
             );
 
-
-        // =================================
-        // Display latest record
-        // =================================
-
         // Clear the previous vehicle data from the page.
         vehicleData.innerHTML = "";
-
 
         // Loop through every key/value pair received.
         for (
@@ -955,94 +1102,43 @@ events.onmessage =
             of Object.entries(data)
         ) {
 
-            // Create a new paragraph for this value.
             const row =
                 document.createElement("p");
 
-            // If the message is a status message,
-            // display only the status value.
             if (key === "status") {
-
                 row.textContent = value;
-
             } else {
-
-                // Otherwise display the field name and value.
-                // Example: speed: 45
                 row.textContent =
                     key + ": " + value;
-
             }
 
-            // Add the new row to the vehicle data area.
             vehicleData.appendChild(row);
 
+            const numericValue = getNumericValue(value);
+            const lowerKey = key.toLowerCase();
 
-            // =================================
-            // Add numeric values to selector
-            // =================================
-
-            // Try to convert the value into a number.
-            const numericValue =
-                Number(value);
-
-
-            // Only numeric fields should be available
-            // as graph options.
-            //
-            // The "id" field is excluded because it is an
-            // identifier rather than a measurement.
             if (
                 key !== "id" &&
-                value !== null &&
-                value !== "" &&
-                Number.isFinite(numericValue)
+                lowerKey !== "on" &&
+                lowerKey !== "off" &&
+                lowerKey !== "status" &&
+                numericValue !== null
             ) {
-
-                // Add a checkbox allowing this field
-                // to be graphed.
                 addGraphOption(key);
-
             }
 
         }
 
-
-        // =================================
-        // Ignore status messages
-        // =================================
-
-        // Status messages are displayed above but are not
-        // stored as graph records.
         if (data.status) {
             return;
         }
 
-
-        // =================================
-        // Store record
-        // =================================
-
-        // Add the newly received vehicle record to the array.
         records.push(data);
 
-
-        // Keep enough records in memory for the graphs.
-        //
-        // This prevents the array from growing forever.
         if (records.length > 5000) {
-
-            // Remove the oldest record.
             records.shift();
-
         }
 
-
-        // =================================
-        // Update graphs
-        // =================================
-
-        // Refresh the selected graphs using the latest data.
         updateGraphs();
 
     };
@@ -1052,17 +1148,11 @@ events.onmessage =
 // SSE connection error
 // ========================================
 
-// This function runs if the connection to Flask is interrupted.
 events.onerror =
     function() {
-
-        // Log a message in the browser console.
-        //
-        // EventSource will normally attempt to reconnect automatically.
         console.log(
             "Live connection lost. Browser will retry..."
         );
-
     };
 
 </script>
