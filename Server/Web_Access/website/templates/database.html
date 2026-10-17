@@ -13,20 +13,16 @@
        GENERAL DATABASE LAYOUT
        ======================================== */
 
-    /* Make the database container use the full available width */
     .database-container {
         width: 100%;
         max-width: 100%;
     }
 
-    /* Styling for the message shown when no database
-       tables are available */
     .no-data {
         font-size: 18px;
         margin: 20px 0;
     }
 
-    /* Change the "No data stored" text colour in dark mode */
     html[data-theme="dark"] .no-data {
         color: #ccc;
     }
@@ -36,8 +32,6 @@
        TABLE SELECTOR
        ======================================== */
 
-    /* Put the table selector, buttons and loading message
-       on the same horizontal line, allowing wrapping on narrow screens */
     .table-selector {
         display: flex;
         align-items: center;
@@ -46,21 +40,18 @@
         margin-bottom: 15px;
     }
 
-    /* Style the "Table:" label */
     .table-selector label {
         font-size: 20px;
-
-        /* Move the label slightly down to align it
-           with the dropdown */
         transform: translateY(3px);
     }
 
 
     /* ========================================
-       TABLE SELECTOR DROPDOWN
+       TABLE SELECTOR & LIMIT DROPDOWNS
        ======================================== */
 
-    #tableSelect {
+    #tableSelect,
+    #limitSelect {
         font-size: 14px;
         height: 25px;
         padding: 0 8px;
@@ -74,10 +65,10 @@
 
 
     /* ========================================
-       DOWNLOAD BUTTON
+       PAGINATION & ACTION BUTTONS
        ======================================== */
 
-    /* Style the CSV download button with a height of 25px */
+    .page-nav-btn,
     #downloadButton {
         font-size: 14px;
         height: 25px;
@@ -87,17 +78,39 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-
-        /* White background with black text */
         background: #ffffff;
         color: #000;
-
-        /* Add a thin border around the button */
         border: 1px solid #767676;
-
-        /* Slightly round the corners */
         border-radius: 4px;
         white-space: nowrap;
+    }
+
+    #topPagination {
+        display: inline-flex;
+        gap: 10px;
+    }
+
+    .page-nav-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+
+    /* ========================================
+       BOTTOM PAGINATION CONTAINER
+       ======================================== */
+
+    .bottom-pagination {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    html[data-theme="dark"] .bottom-pagination {
+        color: #e0e0e0;
     }
 
 
@@ -105,7 +118,6 @@
        DELETE BUTTON
        ======================================== */
 
-    /* Style the session delete button with a height of 25px */
     #deleteButton {
         font-size: 14px;
         height: 25px;
@@ -115,14 +127,9 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-
-        /* Red indicates a destructive action */
         background: #dc3545;
         color: #fff;
-
-        /* Darker red border */
         border: 1px solid #b02a37;
-
         border-radius: 4px;
         white-space: nowrap;
     }
@@ -132,8 +139,6 @@
        LOADING MESSAGE
        ======================================== */
 
-    /* Hide the loading message until a table
-       is being loaded */
     #loading {
         display: none;
     }
@@ -143,16 +148,10 @@
        TABLE WRAPPER
        ======================================== */
 
-    /* Keep the table inside the available page width */
     .table-wrapper {
         width: 100%;
         max-width: 100%;
-
-        /* Prevent the table from creating horizontal
-           overflow */
         overflow: hidden;
-
-        /* Add some space underneath the table */
         padding-bottom: 30px;
     }
 
@@ -161,53 +160,29 @@
        DATABASE TABLE
        ======================================== */
 
-    /* Make the database table fill the available width */
     #dataTable {
         width: 100%;
         max-width: 100%;
-
-        /* Make all columns use a fixed layout */
         table-layout: fixed;
-
-        /* Remove gaps between table borders */
         border-collapse: collapse;
-
-        /* Set the table text size */
         font-size: 14px;
     }
 
-
-    /* Style both table headings and table cells */
     #dataTable th,
     #dataTable td {
-
-        /* Add spacing inside each cell */
         padding: 6px 8px;
-
-        /* Add borders around each cell */
         border: 1px solid #ddd;
-
-        /* Align text to the left */
         text-align: left;
-
-        /* Allow long values to wrap onto multiple lines */
         overflow-wrap: anywhere;
         word-break: break-word;
-
-        /* Allow text to wrap instead of staying on one line */
         white-space: normal;
     }
 
-
-    /* Style the table headings */
     #dataTable th {
         background-color: #333;
         color: white;
     }
 
-
-    /* Give alternating rows a slightly different colour
-       to make the table easier to read */
     #dataTable tr:nth-child(even) {
         background-color: #f5f5f5;
     }
@@ -217,30 +192,25 @@
        DARK MODE
        ======================================== */
 
-    /* Set the general text colour of the table in dark mode */
     html[data-theme="dark"] #dataTable {
         color: #e0e0e0;
     }
 
-    /* Change table borders to a darker colour */
     html[data-theme="dark"] #dataTable th,
     html[data-theme="dark"] #dataTable td {
         border-color: #555;
     }
 
-    /* Dark table heading styling */
     html[data-theme="dark"] #dataTable th {
         background-color: #333;
         color: #fff;
     }
 
-    /* Dark table cell styling */
     html[data-theme="dark"] #dataTable td {
         background-color: #555;
         color: #e0e0e0;
     }
 
-    /* Slightly lighten every second row in dark mode */
     html[data-theme="dark"] #dataTable tr:nth-child(even) td {
         background-color: #606060;
     }
@@ -250,23 +220,23 @@
        DARK MODE CONTROLS
        ======================================== */
 
-    /* Change the table dropdown appearance in dark mode */
-    html[data-theme="dark"] #tableSelect {
+    html[data-theme="dark"] #tableSelect,
+    html[data-theme="dark"] #limitSelect {
         background-color: #d3d3d3;
         color: #000;
         border: 1px solid #888;
         border-radius: 4px;
     }
 
-    /* Change the download button appearance in dark mode */
-    html[data-theme="dark"] #downloadButton {
+    html[data-theme="dark"] #downloadButton,
+    html[data-theme="dark"] .page-nav-btn {
         background-color: #d3d3d3;
         color: #000;
         border: 1px solid #888;
     }
 
-    /* Change the dropdown options in dark mode */
-    html[data-theme="dark"] #tableSelect option {
+    html[data-theme="dark"] #tableSelect option,
+    html[data-theme="dark"] #limitSelect option {
         background-color: #d3d3d3;
         color: #000;
     }
@@ -276,107 +246,70 @@
 
 <div class="database-container">
 
-    <!--
-        Only display the table selector if there are
-        database tables available.
-    -->
     {% if tables %}
 
     <div class="table-selector">
 
-        <!-- Label for the table selection dropdown -->
         <label for="tableSelect">Table:</label>
 
-        <!--
-            Dropdown containing all available database tables.
-
-            "tables" is supplied by Flask/Jinja.
-        -->
         <select id="tableSelect">
-
             {% for table in tables %}
-
-                <!--
-                    Use the actual table name as the option value.
-
-                    Replace "session_" with "Session " so that
-                    the user sees a more readable name.
-                -->
                 <option value="{{ table }}">
                     {{ table.replace("session_", "Session ") }}
                 </option>
-
             {% endfor %}
-
         </select>
 
+        <select id="limitSelect">
+            <option value="50">Show 50</option>
+            <option value="100">Show 100</option>
+            <option value="250" selected>Show 250</option>
+            <option value="all">Show all</option>
+        </select>
 
-        <!--
-            Button used to download the currently selected
-            database table as a CSV file.
-        -->
+        <!-- Top Page Left and Page Right buttons wrapper -->
+        <span id="topPagination" style="display: none;">
+            <button id="pageLeftBtn" class="page-nav-btn" type="button">&lt;</button>
+            <button id="pageRightBtn" class="page-nav-btn" type="button">&gt;</button>
+        </span>
+
         <button id="downloadButton" type="button">
             Download CSV
         </button>
 
-
-        <!--
-            Only administrators are shown the delete button.
-
-            "current_user.admin" is checked by Flask/Jinja.
-        -->
         {% if current_user.admin %}
-
             <button id="deleteButton" type="button">
                 Delete Session
             </button>
-
         {% endif %}
 
-
-        <!--
-            This message is hidden by default.
-
-            JavaScript displays it while a table is loading.
-        -->
         <span id="loading">Loading...</span>
 
     </div>
 
     {% else %}
 
-    <!-- Displayed when there are no database tables -->
     <div class="no-data">
         No data stored.
     </div>
 
     {% endif %}
 
-
-    <!--
-        The selected table's name will be inserted here
-        by JavaScript.
-    -->
     <h2 id="tableTitle"></h2>
-
 
     <div class="table-wrapper">
 
-        <!--
-            Empty table initially.
-
-            JavaScript creates the table headers and rows
-            after receiving data from the Flask API.
-        -->
         <table id="dataTable">
-
-            <!-- Table headings will be inserted here -->
             <thead id="tableHead"></thead>
-
-            <!-- Table data rows will be inserted here -->
             <tbody id="tableBody"></tbody>
-
         </table>
+
+        <!-- Bottom Page Left, Page Indicator (Page n/total), and Page Right -->
+        <div id="bottomPagination" class="bottom-pagination" style="display: none;">
+            <button id="pageLeftBtnBottom" class="page-nav-btn" type="button">&lt;</button>
+            <span id="pageIndicator">Page 1/1</span>
+            <button id="pageRightBtnBottom" class="page-nav-btn" type="button">&gt;</button>
+        </div>
 
     </div>
 
@@ -385,120 +318,103 @@
 
 <script>
 
-
 // ========================================
 // GET HTML ELEMENTS
 // ========================================
 
-// Get the dropdown containing the available database tables.
 const tableSelect = document.getElementById("tableSelect");
+const limitSelect = document.getElementById("limitSelect");
 
-// Get the heading used to display the selected table name.
+const topPagination = document.getElementById("topPagination");
+const pageLeftBtn = document.getElementById("pageLeftBtn");
+const pageRightBtn = document.getElementById("pageRightBtn");
+
+const bottomPagination = document.getElementById("bottomPagination");
+const pageLeftBtnBottom = document.getElementById("pageLeftBtnBottom");
+const pageRightBtnBottom = document.getElementById("pageRightBtnBottom");
+const pageIndicator = document.getElementById("pageIndicator");
+
 const tableTitle = document.getElementById("tableTitle");
-
-// Get the table header section.
 const tableHead = document.getElementById("tableHead");
-
-// Get the table body section.
 const tableBody = document.getElementById("tableBody");
-
-// Get the loading message.
 const loading = document.getElementById("loading");
+const downloadButton = document.getElementById("downloadButton");
 
-// Get the CSV download button.
-const downloadButton =
-    document.getElementById("downloadButton");
+let currentOffset = 0;
 
 
 // ========================================
 // LOAD SELECTED TABLE
 // ========================================
 
-/*
-    Load a database table from the Flask API.
+async function loadTable(tableName, limit, offset = 0) {
 
-    The function sends the selected table name to:
-
-        /api/table?name=...
-
-    The server returns the table's column names
-    and row data as JSON.
-*/
-async function loadTable(tableName) {
-
-    // Show the loading message while the request is running.
     loading.style.display = "inline";
 
     try {
 
-        // Request the selected table from the Flask API.
-        //
-        // encodeURIComponent() makes the table name safe
-        // to include inside the URL.
         const response = await fetch(
-            `/api/table?name=${encodeURIComponent(tableName)}`
+            `/api/table?name=${encodeURIComponent(tableName)}&limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`
         );
 
-        // Check whether the server returned a successful
-        // HTTP response.
         if (!response.ok) {
             throw new Error("Failed to load table");
         }
 
-        // Convert the JSON response into a JavaScript object.
         const data = await response.json();
 
-
-        // ========================================
-        // UPDATE TABLE TITLE
-        // ========================================
-
-        // Display the table name above the table.
-
-        // For example:
-        //
-        // session_1
-        //
-        // becomes:
-        //
-        // Session 1
-        tableTitle.textContent = data.table.replace(
-            "session_",
-            "Session "
-        );
-
-
-        // Remove any existing table headers.
+        tableTitle.textContent = data.table.replace("session_", "Session ");
         tableHead.innerHTML = "";
-
-        // Remove any existing table rows.
         tableBody.innerHTML = "";
+
+        // ========================================
+        // UPDATE PAGINATION VISIBILITY & STATE
+        // ========================================
+        currentOffset = parseInt(data.offset ?? offset, 10);
+        const limitVal = limitSelect.value;
+
+        if (limitVal === "all") {
+            topPagination.style.display = "none";
+            bottomPagination.style.display = "none";
+        } else {
+            const limitNum = parseInt(limitVal, 10);
+            const totalCount = data.total_count ?? 0;
+            const totalPages = Math.max(1, Math.ceil(totalCount / limitNum));
+            const currentPage = Math.floor(currentOffset / limitNum) + 1;
+
+            if (totalPages <= 1) {
+                topPagination.style.display = "none";
+                bottomPagination.style.display = "none";
+            } else {
+                topPagination.style.display = "inline-flex";
+                bottomPagination.style.display = "flex";
+
+                // Format: Page n/total
+                pageIndicator.textContent = `Page ${currentPage}/${totalPages}`;
+
+                const isLeftDisabled = currentPage <= 1;
+                const isRightDisabled = currentPage >= totalPages;
+
+                pageLeftBtn.disabled = isLeftDisabled;
+                pageRightBtn.disabled = isRightDisabled;
+                pageLeftBtnBottom.disabled = isLeftDisabled;
+                pageRightBtnBottom.disabled = isRightDisabled;
+            }
+        }
 
 
         // ========================================
         // CREATE TABLE HEADER
         // ========================================
 
-        // Create a new table row for the column headings.
         const headerRow = document.createElement("tr");
 
-
-        // Loop through every column returned by the API.
         data.columns.forEach(column => {
-
-            // Create a table heading cell.
             const th = document.createElement("th");
-
-            // Put the column name inside the heading.
             th.textContent = column;
-
-            // Add the heading to the header row.
             headerRow.appendChild(th);
-
         });
 
-
-        // Add the completed header row to the table.
         tableHead.appendChild(headerRow);
 
 
@@ -506,49 +422,22 @@ async function loadTable(tableName) {
         // CREATE TABLE ROWS
         // ========================================
 
-        // Loop through every database row returned by the API.
         data.rows.forEach(row => {
-
-            // Create a new table row.
             const tr = document.createElement("tr");
 
-
-            // Loop through every value in this row.
             row.forEach(value => {
-
-                // Create a table cell.
                 const td = document.createElement("td");
-
-                // Display the value inside the cell.
-
-                // If the value is null or undefined,
-                // display an empty string instead.
                 td.textContent = value ?? "";
-
-                // Add the cell to the current row.
                 tr.appendChild(td);
-
             });
 
-
-            // Add the completed row to the table body.
             tableBody.appendChild(tr);
-
         });
 
     } catch (error) {
-
-        // Print the error to the browser console
-        // to help with debugging.
         console.error(error);
-
-        // Tell the user that the table could not be loaded.
         tableTitle.textContent = "Error loading table";
-
     } finally {
-
-        // Hide the loading message once the request
-        // has completed, whether it succeeded or failed.
         loading.style.display = "none";
     }
 }
@@ -558,138 +447,46 @@ async function loadTable(tableName) {
 // REFRESH AVAILABLE TABLES
 // ========================================
 
-/*
-    Check the Flask API for changes to the list of
-    database tables.
-
-    This allows newly created sessions or deleted sessions
-    to appear without the user manually refreshing the page.
-*/
 async function refreshTables() {
-
     try {
-
-        // Request the current list of database tables.
         const response = await fetch("/api/tables");
+        if (!response.ok) return;
 
-        // If the request failed, stop here.
-        if (!response.ok) {
-            return;
-        }
-
-        // Convert the response into a JavaScript object.
         const data = await response.json();
-
-
-        // Save the table currently selected by the user.
         const currentSelection = tableSelect.value;
-
-        // Get the newest table list from the server.
         const newTables = data.tables;
 
+        const existingTables = Array.from(tableSelect.options).map(option => option.value);
 
-        // Get the table names currently displayed
-        // in the dropdown.
-        const existingTables = Array.from(tableSelect.options)
-            .map(option => option.value);
-
-
-        // ========================================
-        // CHECK WHETHER THE TABLE LIST CHANGED
-        // ========================================
-
-        // Only rebuild the dropdown if the list of tables
-        // has actually changed.
         if (JSON.stringify(newTables) !== JSON.stringify(existingTables)) {
-
-            // Remove all existing dropdown options.
             tableSelect.innerHTML = "";
 
-
-            // Add each table returned by the server.
             newTables.forEach(table => {
-
-                // Create a new dropdown option.
                 const option = document.createElement("option");
-
-                // Store the real database table name.
                 option.value = table;
-
-                // Display a more readable name to the user.
-                option.textContent = table.replace(
-                    "session_",
-                    "Session "
-                );
-
-                // Add the option to the dropdown.
+                option.textContent = table.replace("session_", "Session ");
                 tableSelect.appendChild(option);
-
             });
 
-
-            // ========================================
-            // KEEP CURRENT SESSION SELECTED
-            // ========================================
-
-            // If the currently selected table still exists,
-            // keep it selected.
             if (newTables.includes(currentSelection)) {
-
                 tableSelect.value = currentSelection;
-
-
-            // ========================================
-            // CURRENT SESSION WAS DELETED
-            // ========================================
-
-            // If the old selection no longer exists but
-            // there are other tables available, select
-            // the first table.
             } else if (newTables.length > 0) {
-
                 tableSelect.value = newTables[0];
-
-                // Load the newly selected first table.
-                loadTable(newTables[0]);
-
-
-            // ========================================
-            // NO TABLES REMAIN
-            // ========================================
-
+                currentOffset = 0;
+                loadTable(newTables[0], limitSelect.value, currentOffset);
             } else {
-
-                // Clear the table title.
                 tableTitle.textContent = "";
-
-                // Clear the table headings.
                 tableHead.innerHTML = "";
-
-                // Clear the table rows.
                 tableBody.innerHTML = "";
-
+                topPagination.style.display = "none";
+                bottomPagination.style.display = "none";
             }
-
         }
-
     } catch (error) {
-
-        // Log any errors without interrupting the page.
         console.error("Failed to refresh tables:", error);
-
     }
-
 }
 
-
-// ========================================
-// AUTOMATIC TABLE REFRESH
-// ========================================
-
-// Check the database table list every 30 seconds.
-//
-// This allows the page to detect newly created
-// or deleted sessions automatically.
 setInterval(refreshTables, 30000);
 
 
@@ -697,29 +494,10 @@ setInterval(refreshTables, 30000);
 // DOWNLOAD TABLE AS CSV
 // ========================================
 
-/*
-    When the Download CSV button is clicked,
-    request the currently selected table from
-    the Flask CSV endpoint.
-*/
 downloadButton.addEventListener("click", function () {
-
-    // Get the currently selected database table.
     const tableName = tableSelect.value;
-
-    // Do nothing if no table has been selected.
-    if (!tableName) {
-        return;
-    }
-
-
-    // Navigate to the CSV API endpoint.
-
-    // The browser will normally download the returned
-    // CSV file rather than displaying the page.
-    window.location.href =
-        `/api/table/csv?name=${encodeURIComponent(tableName)}`;
-
+    if (!tableName) return;
+    window.location.href = `/api/table/csv?name=${encodeURIComponent(tableName)}`;
 });
 
 
@@ -727,126 +505,79 @@ downloadButton.addEventListener("click", function () {
 // DELETE SESSION
 // ========================================
 
-// Get the delete button.
-//
-// It may not exist because it is only displayed
-// to administrators.
-const deleteButton =
-    document.getElementById("deleteButton");
+const deleteButton = document.getElementById("deleteButton");
 
-
-// Only add the event listener if the delete button exists.
 if (deleteButton) {
+    deleteButton.addEventListener("click", async function () {
+        const tableName = tableSelect.value;
+        if (!tableName) return;
 
-    // Run this function when the delete button is clicked.
-    deleteButton.addEventListener(
-        "click",
-        async function () {
+        const sessionNumber = tableName.replace("session_", "");
+        const confirmed = confirm(`Are you sure you wish to delete session ${sessionNumber}?`);
+        if (!confirmed) return;
 
-            // Get the currently selected table.
-            const tableName = tableSelect.value;
-
-            // Do nothing if there is no selected table.
-            if (!tableName) {
-                return;
-            }
-
-
-            // Remove "session_" from the table name
-            // so that the confirmation message only
-            // displays the session number.
-            //
-            // Example:
-            //
-            // session_12
-            //
-            // becomes:
-            //
-            // 12
-            const sessionNumber =
-                tableName.replace("session_", "");
-
-
-            // Ask the user to confirm before deleting
-            // the selected session.
-            const confirmed = confirm(
-                `Are you sure you wish to delete session ${sessionNumber}?`
+        try {
+            const response = await fetch(
+                `/api/table/delete?name=${encodeURIComponent(tableName)}`,
+                { method: "DELETE" }
             );
 
-
-            // Stop if the user clicked Cancel.
-            if (!confirmed) {
-                return;
-            }
-
-
-            try {
-
-                // Send a DELETE request to the Flask API.
-                const response = await fetch(
-                    `/api/table/delete?name=${encodeURIComponent(tableName)}`,
-                    {
-                        method: "DELETE"
-                    }
-                );
-
-
-                // Check whether the server successfully
-                // processed the deletion.
-                if (!response.ok) {
-                    throw new Error("Failed to delete session");
-                }
-
-
-                // Reload the page after successful deletion.
-                //
-                // This causes Flask/Jinja to generate the
-                // page again with the updated list of tables.
-                window.location.reload();
-
-            } catch (error) {
-
-                // Log the error for debugging.
-                console.error(error);
-
-                // Display an error message to the user.
-                alert("Failed to delete session.");
-
-            }
-
+            if (!response.ok) throw new Error("Failed to delete session");
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            alert("Failed to delete session.");
         }
-    );
-
+    });
 }
 
 
 // ========================================
-// SWITCH DATABASE TABLE
+// SWITCH DATABASE TABLE, LIMIT OR PAGE
 // ========================================
 
-/*
-    When the user selects a different table from
-    the dropdown, load the new table without
-    refreshing the entire webpage.
-*/
 tableSelect.addEventListener("change", function () {
-
-    // "this.value" contains the newly selected table name.
-    loadTable(this.value);
-
+    currentOffset = 0;
+    loadTable(this.value, limitSelect.value, currentOffset);
 });
+
+limitSelect.addEventListener("change", function () {
+    if (tableSelect.value) {
+        currentOffset = 0;
+        loadTable(tableSelect.value, this.value, currentOffset);
+    }
+});
+
+function goToPreviousPage() {
+    if (tableSelect.value && limitSelect.value !== "all") {
+        const limitNum = parseInt(limitSelect.value, 10);
+        currentOffset = Math.max(0, currentOffset - limitNum);
+        loadTable(tableSelect.value, limitSelect.value, currentOffset);
+    }
+}
+
+function goToNextPage() {
+    if (tableSelect.value && limitSelect.value !== "all") {
+        const limitNum = parseInt(limitSelect.value, 10);
+        currentOffset += limitNum;
+        loadTable(tableSelect.value, limitSelect.value, currentOffset);
+    }
+}
+
+pageLeftBtn.addEventListener("click", goToPreviousPage);
+pageLeftBtnBottom.addEventListener("click", goToPreviousPage);
+
+pageRightBtn.addEventListener("click", goToNextPage);
+pageRightBtnBottom.addEventListener("click", goToNextPage);
 
 
 // ========================================
 // INITIAL TABLE LOAD
 // ========================================
 
-// Check whether there is a table selected.
 if (tableSelect.value) {
-
-    // Load the first/current table when the page opens.
-    loadTable(tableSelect.value);
-
+    currentOffset = 0;
+    loadTable(tableSelect.value, limitSelect.value, currentOffset);
 }
 
 </script>

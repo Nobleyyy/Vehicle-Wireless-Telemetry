@@ -21,6 +21,19 @@ def home():
     )
 
 
+@views.route("/database")
+@login_required
+def database():
+    # Get available database tables
+    tables = d.get_table_names()
+    # Display database page
+    return render_template(
+        "database.html",
+        tables=tables,
+        user=current_user
+    )
+
+
 @views.route("/live")
 @login_required
 def live():
@@ -75,33 +88,19 @@ def live_raw():
     )
 
 
-@views.route("/database")
-@login_required
-def database():
-    # Get available database tables
-    tables = d.get_table_names()
-    # Display database page
-    return render_template(
-        "database.html",
-        tables=tables,
-        user=current_user
-    )
-
-
 @views.route("/api/table")
 @login_required
 def api_table():
-    # Get requested table
     table_name = request.args.get("name")
-    # Retrieve data from the requested table
-    data = d.get_table_data(table_name)
-    # Return error if table does not exist
+    limit = request.args.get("limit")  # Will be '50', '100', '250', or 'all'
+    offset = request.args.get("offset", 0)  # Get offset from frontend
+    
+    # Pass limit and offset into your database function
+    data = d.get_table_data(table_name, limit, offset)
     if data is None:
-        return jsonify({
-            "error": "Invalid table"
-        }), 400
-
+        return jsonify({"error": "Table not found"}), 404
     return jsonify(data)
+
 
 @views.route("/api/tables")
 @login_required

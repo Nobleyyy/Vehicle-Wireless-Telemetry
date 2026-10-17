@@ -37,17 +37,34 @@ def get_table_names() -> list:
     # Return the table names as a list
     return [table["name"] for table in tables]
 
-def get_table_data(table_name:str) -> dict:
+def get_table_data(table_name: str, limit=None, offset=0) -> dict:
     # Make sure the table exists before using it
     if table_name not in get_table_names():
         return None
 
-    # Retrieve all records from the requested table
+    # Retrieve records from the requested table
     conn = get_db()
-    rows = conn.execute(
-        f'SELECT * FROM "{table_name}"'
-    ).fetchall()
+    
+    # Get total row count for pagination
+    total_count_row = conn.execute(f'SELECT COUNT(*) as count FROM "{table_name}"').fetchone()
+    total_count = total_count_row["count"] if total_count_row else 0
+
+    query = f'SELECT * FROM "{table_name}"'
+    params = []
+    
+    # Apply limit and offset if specified and limit is not 'all'
+    if limit and limit != "all":
+        try:
+            limit_val = int(limit)
+            offset_val = int(offset) if offset is not None and str(offset).strip() != "" else 0
+            query += " LIMIT ? OFFSET ?"
+            params.extend([limit_val, offset_val])
+        except (ValueError, TypeError):
+            pass
+
+    rows = conn.execute(query, params).fetchall()
     conn.close()
+    
     # Get the column names from the first row
     columns = list(rows[0].keys()) if rows else []
     formatted_rows = []
@@ -68,11 +85,13 @@ def get_table_data(table_name:str) -> dict:
             record[column]
             for column in columns
         ])
-     # Return the table name, column names, and formatted rows
+     # Return the table name, column names, formatted rows, total row count, and offset
     return {
         "table": table_name,
         "columns": columns,
-        "rows": formatted_rows
+        "rows": formatted_rows,
+        "total_count": total_count,
+        "offset": offset
     }
 
 def get_table_csv(table_name:str):
