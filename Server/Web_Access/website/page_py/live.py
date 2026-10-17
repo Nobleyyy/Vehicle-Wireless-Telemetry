@@ -107,10 +107,10 @@ def live_stream():
 
                     win32event.ResetEvent(event)
 
-                # No new event/data for 30 seconds
+                # No new event/data for 15 seconds
                 if (
                     not waiting_sent
-                    and time.time() - last_data_time >= 30
+                    and time.time() - last_data_time >= 15
                 ):
                     messages.put({
                         "status": "Waiting for data to recommence..."
