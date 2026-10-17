@@ -25,17 +25,18 @@ def get_db():
 def get_table_names() -> list:
     # Open a database connection
     conn = get_db()
-    # Retrieve all user-created tables
+    # Retrieve all user-created tables sorted naturally by length and then name
     tables = conn.execute("""
         SELECT name
         FROM sqlite_master
         WHERE type = 'table'
         AND name NOT LIKE 'sqlite_%'
-        ORDER BY name
+        ORDER BY LENGTH(name), name
     """).fetchall()
     conn.close()
     # Return the table names as a list
     return [table["name"] for table in tables]
+
 
 def get_table_data(table_name: str, limit=None, offset=0) -> dict:
     # Make sure the table exists before using it
