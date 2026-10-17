@@ -593,6 +593,14 @@
 
 <script>
     const events = new EventSource("/live?stream=1");
+
+    // Close SSE connection cleanly on page navigation to prevent freeze
+    window.addEventListener("pagehide", function() {
+        if (events) {
+            events.close();
+        }
+    });
+
     const statusBanner = document.getElementById("status-banner");
 
     events.onmessage = function(event) {

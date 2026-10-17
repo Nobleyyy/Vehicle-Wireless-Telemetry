@@ -1090,6 +1090,13 @@ const events =
         "/live?stream=1"
     );
 
+// Close SSE connection cleanly on page navigation to prevent freeze
+window.addEventListener("pagehide", function() {
+    if (events) {
+        events.close();
+    }
+});
+
 
 // ========================================
 // Receive live data
