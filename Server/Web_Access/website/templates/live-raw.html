@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Live Raw{% endblock %}
+
+{% block content %}
+
+<!-- Main heading shown at the top of the live raw data page -->
+<h1>Live Raw Data Page</h1>
+
+<!-- Copy button with rounded corners for Excel-compatible 2-column pasting (initially hidden) -->
+<div id="copy-container" style="margin-bottom: 15px; display: none;">
+    <button id="copy-btn" style="cursor: pointer; padding: 6px 14px; font-size: 14px; border-radius: 6px; border: 1px solid #767676; background-color: #ffffff; color: #000;">Copy for Excel</button>
+</div>
+
+<style>
+    /* Change the copy button appearance in dark mode to match the database page buttons */
+    html[data-theme="dark"] #copy-btn {
+        background-color: #d3d3d3 !important;
+        color: #000 !important;
+        border: 1px solid #888 !important;
+    }
+</style>
+
+<!--
+    This div is used to display the most recent vehicle data
+    received from the Flask server.
+-->
+<div id="vehicle-data">
+    Waiting for data...
+</div>
+
+<script>
+
+// ========================================
+// Elements
+// ========================================
+
+// Get the element used to display the latest vehicle data.
+const vehicleData =
+    document.getElementById("vehicle-data");
+
+// Get the copy button container element
+const copyContainer =
+    document.getElementById("copy-container");
+
+// Get the copy button element
+const copyBtn =
+    document.getElementById("copy-btn");
+
+// Store the latest received data object globally for copying
+let latestData = {};
+
+
+// ========================================
+// Copy Data for Excel (2 Columns)
+// ========================================
+
+copyBtn.addEventListener("click", function() {
+    let textToCopy = "";
+    for (const [key, value] of Object.entries(latestData)) {
+        // Tab-separated format so it pastes neatly into 2 columns in Excel
+        textToCopy += key + "\t" + value + "\n";
+    }
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+        }, 1500);
+    }).catch(err => {
+        console.error("Failed to copy text: ", err);
+    });
+});
+
+
+// ========================================
+// Connect to Flask SSE stream
+// ========================================
+
+// Create an EventSource connection to the Flask endpoint.
+const events =
+    new EventSource(
+        "/live?stream=1"
+    );
+
+
+// ========================================
+// Receive live data
+// ========================================
+
+events.onmessage =
+    function(event) {
+
+        const data =
+            JSON.parse(
+                event.data
+            );
+
+        // Clear the previous vehicle data from the page.
+        vehicleData.innerHTML = "";
+
+        // Loop through every key/value pair received.
+        for (
+            const [key, value]
+            of Object.entries(data)
+        ) {
+
+            const row =
+                document.createElement("p");
+
+            if (key === "status") {
+                row.textContent = value;
+            } else {
+                // Make the label bold
+                const strong = document.createElement("strong");
+                strong.textContent = key + ":";
+                row.appendChild(strong);
+                row.appendChild(document.createTextNode(" " + value));
+            }
+
+            vehicleData.appendChild(row);
+
+        }
+
+        // Hide copy button if a status message is received, otherwise show it
+        if (data.status) {
+            copyContainer.style.display = "none";
+            latestData = {};
+        } else {
+            latestData = data;
+            copyContainer.style.display = "block";
+        }
+
+    };
+
+
+// ========================================
+// SSE connection error
+// ========================================
+
+events.onerror =
+    function() {
+        console.log(
+            "Live connection lost. Browser will retry..."
+        );
+        // Hide the copy button and show waiting message when connection drops
+        copyContainer.style.display = "none";
+        vehicleData.textContent = "Waiting for data...";
+        latestData = {};
+    };
+
+</script>
+
+{% endblock %}
